@@ -1,63 +1,92 @@
 # Guía de Permisos y Protección de Ramas en GitHub
 
-Una vez que hayas creado el repositorio en GitHub y subido las 5 ramas (`main`, `jesus`, `yaro`, `hugo`, `samu`), sigue estos pasos para aplicar el control de accesos.
+Configuración específica para el repositorio:
+`https://github.com/smulaboughaba/NASA_SPACE_APPS_CHALLENGE`
+
+## Asignación de usuarios y ramas
+
+| Rama | Propietario autorizado | Acceso de administración |
+| :--- | :--- | :--- |
+| `main` | Exclusiva de administración | `@smulaboughaba` |
+| `samu` | `@smulaboughaba` | `@smulaboughaba` |
+| `hugo` | `@hviciana` | `@smulaboughaba` |
+| `yaro` | `@ItsYarosun` | `@smulaboughaba` |
+| `jesus` | `@jesusorellanagil2002` | `@smulaboughaba` |
 
 ---
 
-## 1. Invitar a los colaboradores
+## Paso 1: Invitar a los colaboradores
 
-1. Ve a tu repositorio en GitHub → **Settings** → **Collaborators** (o **Collaborators and teams**).
-2. Haz clic en **Add people** e invita a los usuarios de GitHub de Jesús, Yaro, Hugo y Samu con rol **Write**.
-3. Tú (`@smulaboughaba`) mantienes el rol **Admin** (propietario del repositorio).
+1. Entra en [Settings → Collaborators](https://github.com/smulaboughaba/NASA_SPACE_APPS_CHALLENGE/settings/access).
+2. Haz clic en **Add people** e invita con rol **Write** a:
+   - `hviciana`
+   - `ItsYarosun`
+   - `jesusorellanagil2002`
+3. Tú (`@smulaboughaba`) mantienes el rol **Admin** (propietario).
 
 ---
 
-## 2. Proteger `main` (acceso exclusivo para ti)
+## Paso 2: Ruleset 1 — Acceso exclusivo Admin (`main` y `samu`)
 
-Para impedir que ningún integrante pueda hacer push directo o modificar `main`, y exigir que todo pase por Pull Request aprobado por ti:
+Bloquea a nivel de servidor de GitHub que ningún colaborador pueda hacer push, borrar o modificar `main` o `samu`:
 
-1. Ve a **Settings** → **Rules** → **Rulesets** (o **Branches** → **Add branch ruleset**).
-2. Nombre del ruleset: `Proteccion main`.
+1. Ve a **Settings** → **Rules** → **Rulesets** → **New ruleset** → **New branch ruleset**.
+2. **Ruleset Name**: `Acceso exclusivo Admin: main y samu`.
 3. **Enforcement status**: `Active`.
-4. **Target branches**: Haz clic en **Add target** → **Include by pattern** → escribe `main`.
-5. Activa las siguientes reglas (**Branch rules**):
-   - **Restrict deletions**: evita que nadie borre la rama `main`.
-   - **Block force pushes**: evita reescrituras de historial en `main`.
+4. **Bypass list**:
+   - Haz clic en **Add bypass** y selecciona únicamente **Repository admin** (`@smulaboughaba`).
+5. **Target branches**:
+   - **Add target** → **Include by pattern** → añade `main`.
+   - **Add target** → **Include by pattern** → añade `samu`.
+6. **Branch rules** (marca las siguientes casillas):
+   - **Restrict deletions** (impide borrar `main` o `samu`).
+   - **Block force pushes** (impide reescribir el historial).
    - **Require a pull request before merging**:
      - Marca **Require approvals** (mínimo `1`).
-     - Marca **Require review from Code Owners** (usará `.github/CODEOWNERS`, donde solo estás tú: `@smulaboughaba`).
-6. **Bypass list**:
-   - Haz clic en **Add bypass** y selecciona únicamente **Repository admin** (tú).
-   - De este modo, tú podrás hacer push o merge directo a `main`, mientras que los demás colaboradores no podrán hacer push directo ni aprobar sus propios PRs.
-7. Haz clic en **Create** para guardar.
+     - Marca **Require review from Code Owners** (usa `.github/CODEOWNERS`, donde solo estás tú: `@smulaboughaba`).
+   - **Restrict pushes** (si aparece disponible en tu cuenta/plan, impide también pushes directos a estas ramas para quienes no estén en el Bypass).
+7. Haz clic en **Create**.
+
+> Con esto, `hviciana`, `ItsYarosun` y `jesusorellanagil2002` no podrán hacer push directo ni a `main` ni a `samu` bajo ninguna circunstancia.
 
 ---
 
-## 3. Permisos por rama secundaria (`jesus`, `yaro`, `hugo`, `samu`)
+## Paso 3: Ruleset 2 — Protección de ramas del equipo (`hugo`, `yaro`, `jesus`) + Guardián automático
 
-En GitHub, la forma de gestionar los permisos en cada rama depende del tipo de cuenta o plan donde esté alojado el repositorio:
+En repositorios bajo cuentas personales de GitHub (`smulaboughaba/...`), los Rulesets nativos distinguen por **rol** (Admin vs Write) pero no permiten seleccionar usuarios individuales por rama sin una Organización. Por eso combinamos dos capas:
 
-### Opción A: Organización de GitHub (GitHub Team / GitHub Education Pack) o cuenta GitHub Pro (en repos privados) / Repo Público con Branch Protection
+### Capa A: Ruleset 2 en GitHub
 
-Si el repositorio es **público** o está en **GitHub Pro / Organización con Team o Education Pack**, puedes restringir explícitamente quién hace push a cada rama individual:
+1. Ve a **Settings** → **Rules** → **Rulesets** → **New ruleset** → **New branch ruleset**.
+2. **Ruleset Name**: `Protección ramas equipo: hugo, yaro, jesus`.
+3. **Enforcement status**: `Active`.
+4. **Target branches**:
+   - **Add target** → **Include by pattern** → añade `hugo`, `yaro` y `jesus`.
+5. **Branch rules**:
+   - Marca **Restrict deletions** (nadie puede borrar la rama de otro compañero).
+   - **Importante sobre *Block force pushes***:
+     - El repositorio incluye el workflow automático [`.github/workflows/branch-access-control.yml`](../.github/workflows/branch-access-control.yml), que detecta en cada `push` si un usuario intentó subir código a la rama de otro compañero y **revierte automáticamente la rama al commit anterior (`git push --force`)** además de marcar el error.
+     - Para que ese guardián automático de GitHub Actions pueda ejecutar la reversión en `hugo`, `yaro` y `jesus`, **no marques *Block force pushes*** en este Ruleset 2 (o mantén *Bypass* si tu plan lo permite para la app/actor correspondiente), ya que si *Block force pushes* está activo sin bypass para `GITHUB_TOKEN`, el servidor bloqueará la reversión automática del workflow (aunque el workflow seguirá fallando y alertando del push indebido).
+     - En su defecto, si prefieres **bloqueo previo al push (antes de aceptar el `git push`)** a nivel nativo de GitHub para cada integrante por separado, consulta la alternativa gratuita con Organización abajo.
+6. **Bypass list**: añade **Repository admin** si quieres poder administrarlas como propietario, y **no añadas** el rol Write.
+7. Haz clic en **Create**.
 
-1. Crea un ruleset o regla de protección (**Settings** → **Branches** → **Add classic branch protection rule** o **Rulesets**) para cada rama:
-   - Regla para `jesus`: activa **Restrict who can push to matching branches** y añade únicamente al usuario de GitHub de Jesús (y a ti como Admin si quieres respaldo).
-   - Regla para `yaro`: restringe pushes únicamente al usuario de GitHub de Yaro.
-   - Regla para `hugo`: restringe pushes únicamente al usuario de GitHub de Hugo.
-   - Regla para `samu`: restringe pushes únicamente al usuario de GitHub de Samu.
-2. Activa también **Allow force pushes** desmarcado (bloqueado) y **Allow deletions** desmarcado en todas ellas para evitar borrados accidentales.
+### Capa B: Guardián automático en GitHub Actions
 
-> **Nota sobre GitHub:** La opción clásica *"Restrict who can push to matching branches"* en repositorios privados requiere que el repo pertenezca a una Organización (plan Team / Enterprise / GitHub Campus) o que sea público. En repositorios privados de cuentas personales gratuitas (GitHub Free), GitHub permite proteger ramas frente a borrados/force-push, pero no restringir pushes por usuario individual.
+El archivo [`.github/workflows/branch-access-control.yml`](../.github/workflows/branch-access-control.yml) se ejecuta en cada `push` y `pull_request`:
+- `main` / `samu` → solo `@smulaboughaba`
+- `hugo` → solo `@hviciana` (y `@smulaboughaba`)
+- `yaro` → solo `@ItsYarosun` (y `@smulaboughaba`)
+- `jesus` → solo `@jesusorellanagil2002` (y `@smulaboughaba`)
 
-### Opción B: Cuenta personal gratuita en repositorio privado
+Si alguien empuja por error a la rama de otro compañero o intenta abrir un PR desde ella, el job falla inmediatamente y revierte la rama al estado previo.
 
-Si el repositorio es privado bajo una cuenta gratuita de GitHub Free (sin restricción de push por usuario individual en branch rules):
+---
 
-1. Crea un ruleset para el patrón de ramas de desarrollo (`jesus`, `yaro`, `hugo`, `samu`) activando:
-   - **Restrict deletions** (nadie puede borrar la rama de otro).
-   - **Block force pushes** (nadie puede sobrescribir el historial de otro).
-2. Cada integrante trabaja únicamente en su rama asignada (`git checkout <su-rama>`).
-3. La seguridad de integración queda garantizada porque **`main` sí está protegida** y todos los cambios hacia `main` requieren Pull Request y aprobación tuya vía `CODEOWNERS` (`@smulaboughaba`).
-4. Además, cuando organicemos los roles y carpetas del proyecto, se pueden asignar las rutas correspondientes en `.github/CODEOWNERS` para controlar las revisiones por módulo.
+## Alternativa con bloqueo nativo pre-push por usuario (Organización gratuita de GitHub)
 
+Si en lugar de la reversión automática tras el push prefieres que GitHub rechace el `git push` de antemano cuando un integrante intenta empujar a la rama de otro:
+
+1. Crea una **Organización gratuita en GitHub** (p. ej. `NASA-Space-Apps-Team`) y transfiere allí el repositorio (en repositorios públicos es totalmente gratuito; en privados requiere GitHub Team / GitHub Education).
+2. Crea 3 **Teams** de un solo miembro dentro de la organización (`team-hugo` con `@hviciana`, `team-yaro` con `@ItsYarosun`, `team-jesus` con `@jesusorellanagil2002`).
+3. En **Settings → Branches → Branch protection rules** (reglas clásicas), activa **Restrict who can push to matching branches** en cada rama seleccionando únicamente su Team correspondiente.

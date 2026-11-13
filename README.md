@@ -4,13 +4,13 @@ Repositorio oficial del proyecto para el hackathon **NASA Space Apps Challenge**
 
 ## Estructura de ramas y responsables
 
-| Rama | Tipo | Responsable | Acceso / Rol |
-| :--- | :--- | :--- | :--- |
-| `main` | Principal / Producción | `@smulaboughaba` | Acceso exclusivo de administración. Solo recibe cambios aprobados mediante Pull Request (o merge por el administrador). |
-| `jesus` | Desarrollo | Jesús | Rama asignada para el desarrollo de Jesús. |
-| `yaro` | Desarrollo | Yaro | Rama asignada para el desarrollo de Yaro. |
-| `hugo` | Desarrollo | Hugo | Rama asignada para el desarrollo de Hugo. |
-| `samu` | Desarrollo | Samu | Rama asignada para el desarrollo de Samu. |
+| Rama | Tipo | Responsable | Usuario GitHub | Acceso / Rol |
+| :--- | :--- | :--- | :--- | :--- |
+| `main` | Principal / Producción | Samu (Admin) | `@smulaboughaba` | Acceso exclusivo de administración. Solo recibe cambios aprobados mediante Pull Request. |
+| `samu` | Desarrollo | Samu | `@smulaboughaba` | Rama exclusiva de desarrollo de Samu. |
+| `hugo` | Desarrollo | Hugo | `@hviciana` | Rama exclusiva de desarrollo de Hugo. |
+| `yaro` | Desarrollo | Yaro | `@ItsYarosun` | Rama exclusiva de desarrollo de Yaro. |
+| `jesus` | Desarrollo | Jesús | `@jesusorellanagil2002` | Rama exclusiva de desarrollo de Jesús. |
 
 > Para la configuración detallada de permisos y reglas de protección en GitHub, consulta [docs/GITHUB_PERMISSIONS.md](docs/GITHUB_PERMISSIONS.md).
 
@@ -18,7 +18,7 @@ Repositorio oficial del proyecto para el hackathon **NASA Space Apps Challenge**
 
 1. **Clonar el repositorio** (una sola vez):
    ```bash
-   git clone <URL_DEL_REPOSITORIO>
+   git clone https://github.com/smulaboughaba/NASA_SPACE_APPS_CHALLENGE.git
    cd NASA_SPACE_APPS_CHALLENGE
    ```
 
@@ -44,4 +44,3 @@ Repositorio oficial del proyecto para el hackathon **NASA Space Apps Challenge**
 5. **Integrar cambios en `main`**:
    - Abre un **Pull Request (PR)** en GitHub desde `<tu-rama>` hacia `main`.
    - El administrador (`@smulaboughaba`) revisará y aprobará el merge hacia `main`.
-

@@ -1,9 +1,9 @@
 ## Integrante y rama de origen
 
-- [ ] `jesus` (Jesús)
-- [ ] `yaro` (Yaro)
-- [ ] `hugo` (Hugo)
-- [ ] `samu` (Samu)
+- [ ] `jesus` (Jesús — `@jesusorellanagil2002`)
+- [ ] `yaro` (Yaro — `@ItsYarosun`)
+- [ ] `hugo` (Hugo — `@hviciana`)
+- [ ] `samu` (Samu — `@smulaboughaba`)
 
 ## Resumen de cambios
 
@@ -18,4 +18,3 @@
 - [ ] Mi rama está actualizada con los últimos cambios de `main`.
 - [ ] He probado los cambios localmente y no rompen el proyecto.
 - [ ] No se han incluido archivos sensibles (`.env`, claves, etc.).
-

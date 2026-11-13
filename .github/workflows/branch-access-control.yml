@@ -1,0 +1,84 @@
+name: Control de Acceso por Rama
+
+on:
+  push:
+    branches:
+      - main
+      - samu
+      - hugo
+      - yaro
+      - jesus
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  verify-branch-owner:
+    name: Verificar permisos de usuario sobre la rama
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Verificar permisos de usuario sobre la rama
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+
+          ACTOR="${GITHUB_ACTOR,,}"
+
+          is_authorized() {
+            local branch="$1"
+            local actor="$2"
+            case "$branch" in
+              main|samu)
+                [[ "$actor" == "smulaboughaba" ]]
+                ;;
+              hugo)
+                [[ "$actor" == "hviciana" || "$actor" == "smulaboughaba" ]]
+                ;;
+              yaro)
+                [[ "$actor" == "itsyarosun" || "$actor" == "smulaboughaba" ]]
+                ;;
+              jesus)
+                [[ "$actor" == "jesusorellanagil2002" || "$actor" == "smulaboughaba" ]]
+                ;;
+              *)
+                [[ "$actor" == "smulaboughaba" ]]
+                ;;
+            esac
+          }
+
+          if [[ "${GITHUB_EVENT_NAME}" == "push" ]]; then
+            BRANCH="${GITHUB_REF_NAME}"
+            if is_authorized "$BRANCH" "$ACTOR"; then
+              echo "Push autorizado: @${GITHUB_ACTOR} tiene permisos en la rama '${BRANCH}'."
+              exit 0
+            fi
+
+            echo "::error::Acceso denegado: @${GITHUB_ACTOR} no tiene permiso para hacer push en la rama '${BRANCH}'."
+
+            if [[ -n "${BEFORE_SHA}" && "${BEFORE_SHA}" != "0000000000000000000000000000000000000000" ]]; then
+              echo "Revirtiendo automáticamente la rama '${BRANCH}' al commit anterior (${BEFORE_SHA})..."
+              git push --force origin "${BEFORE_SHA}:refs/heads/${BRANCH}"
+              echo "Rama '${BRANCH}' restaurada a ${BEFORE_SHA}."
+            fi
+
+            exit 1
+          elif [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            BRANCH="${GITHUB_HEAD_REF}"
+            if is_authorized "$BRANCH" "$ACTOR"; then
+              echo "Pull Request autorizado: @${GITHUB_ACTOR} puede abrir PR desde '${BRANCH}'."
+              exit 0
+            fi
+
+            echo "::error::Acceso denegado: @${GITHUB_ACTOR} no tiene permiso para abrir un Pull Request desde la rama '${BRANCH}'."
+            exit 1
+          fi
