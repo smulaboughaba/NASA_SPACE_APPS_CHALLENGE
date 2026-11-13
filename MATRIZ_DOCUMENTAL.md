@@ -30,7 +30,8 @@ NASA_SPACE_APPS_CHALLENGE/
 │   ├── README.md
 │   ├── 01_analisis_del_reto.md            # [RES-01] Análisis del Challenge oficial y criterios del jurado
 │   ├── 02_fuentes_datos_nasa.md           # [RES-02] Catálogo de APIs, datasets y misiones NASA
-│   └── 03_estado_del_arte_y_solucion.md   # [RES-03] Soluciones existentes, propuesta de valor e impacto
+│   ├── 03_estado_del_arte_y_solucion.md   # [RES-03] Soluciones existentes, propuesta de valor e impacto
+│   └── 04_plan_de_research_y_evidencias_fusion.md # [RES-04] Plan de research y evidencias de fusión SAR + Open Data
 │
 ├── dev/                                   # Código fuente organizado por módulos técnicos
 │   ├── README.md                          # Normas de arquitectura y desarrollo en ramas
@@ -107,6 +108,7 @@ Leyenda: **R** = Responsable de ejecutar · **A** = Aprobador final · **C** = C
 | `RES-01` | Análisis del Reto NASA | [`research/01_analisis_del_reto.md`](research/01_analisis_del_reto.md) | Fase 1 | Todo el equipo | En preparación (Base completada) |
 | `RES-02` | Fuentes y Datos Oficiales NASA | [`research/02_fuentes_datos_nasa.md`](research/02_fuentes_datos_nasa.md) | Fase 1 | Todo el equipo | En preparación (Base completada) |
 | `RES-03` | Estado del Arte y Solución Propuesta | [`research/03_estado_del_arte_y_solucion.md`](research/03_estado_del_arte_y_solucion.md) | Fase 1 | Todo el equipo | En preparación (Base completada) |
+| `RES-04` | Plan de Research y Evidencias de Fusión | [`research/04_plan_de_research_y_evidencias_fusion.md`](research/04_plan_de_research_y_evidencias_fusion.md) | Fase 1 | Todo el equipo | En preparación (Base completada) |
 | `DEV-01` | Módulo Frontend | [`dev/frontend/README.md`](dev/frontend/README.md) | Fase 2–3 | *Por asignar* | Pendiente |
 | `DEV-02` | Módulo Backend | [`dev/backend/README.md`](dev/backend/README.md) | Fase 2–3 | *Por asignar* | Pendiente |
 | `DEV-03` | Módulo Data Science | [`dev/data_science/README.md`](dev/data_science/README.md) | Fase 2–3 | *Por asignar* | Pendiente |

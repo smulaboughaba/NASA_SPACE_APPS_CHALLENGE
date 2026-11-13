@@ -9,6 +9,7 @@ Esta carpeta centraliza toda la documentación previa al desarrollo técnico: co
 | `RES-01` | [`01_analisis_del_reto.md`](01_analisis_del_reto.md) | Desglose oficial del Challenge, problema, objetivos y criterios de evaluación. |
 | `RES-02` | [`02_fuentes_datos_nasa.md`](02_fuentes_datos_nasa.md) | Registro estructurado de APIs, datasets y misiones de la NASA que vamos a consumir. |
 | `RES-03` | [`03_estado_del_arte_y_solucion.md`](03_estado_del_arte_y_solucion.md) | Análisis de alternativas existentes, valor añadido de nuestra propuesta e impacto. |
+| `RES-04` | [`04_plan_de_research_y_evidencias_fusion.md`](04_plan_de_research_y_evidencias_fusion.md) | Plan operativo de research (`R1`–`R4`) y evidencias científicas de fusión SAR + Open Data para validar el criterio *Validity*. |
 
 ## Normas de documentación en `research/`
 
