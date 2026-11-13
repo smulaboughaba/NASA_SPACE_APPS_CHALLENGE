@@ -104,14 +104,14 @@ Leyenda: **R** = Responsable de ejecutar · **A** = Aprobador final · **C** = C
 | Código | Documento | Archivo | Fase | Responsable | Estado |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | `MAT-00` | Matriz Documental del Proyecto | [`MATRIZ_DOCUMENTAL.md`](MATRIZ_DOCUMENTAL.md) | Transversal | Samu (`@smulaboughaba`) | En preparación |
-| `RES-01` | Análisis del Reto NASA | [`research/01_analisis_del_reto.md`](research/01_analisis_del_reto.md) | Fase 1 | Todo el equipo | Pendiente |
-| `RES-02` | Fuentes y Datos Oficiales NASA | [`research/02_fuentes_datos_nasa.md`](research/02_fuentes_datos_nasa.md) | Fase 1 | Todo el equipo | Pendiente |
-| `RES-03` | Estado del Arte y Solución Propuesta | [`research/03_estado_del_arte_y_solucion.md`](research/03_estado_del_arte_y_solucion.md) | Fase 1 | Todo el equipo | Pendiente |
+| `RES-01` | Análisis del Reto NASA | [`research/01_analisis_del_reto.md`](research/01_analisis_del_reto.md) | Fase 1 | Todo el equipo | En preparación (Base completada) |
+| `RES-02` | Fuentes y Datos Oficiales NASA | [`research/02_fuentes_datos_nasa.md`](research/02_fuentes_datos_nasa.md) | Fase 1 | Todo el equipo | En preparación (Base completada) |
+| `RES-03` | Estado del Arte y Solución Propuesta | [`research/03_estado_del_arte_y_solucion.md`](research/03_estado_del_arte_y_solucion.md) | Fase 1 | Todo el equipo | En preparación (Base completada) |
 | `DEV-01` | Módulo Frontend | [`dev/frontend/README.md`](dev/frontend/README.md) | Fase 2–3 | *Por asignar* | Pendiente |
 | `DEV-02` | Módulo Backend | [`dev/backend/README.md`](dev/backend/README.md) | Fase 2–3 | *Por asignar* | Pendiente |
 | `DEV-03` | Módulo Data Science | [`dev/data_science/README.md`](dev/data_science/README.md) | Fase 2–3 | *Por asignar* | Pendiente |
 | `DEV-04` | Módulo Shared (Contratos y Config) | [`dev/shared/README.md`](dev/shared/README.md) | Fase 2–3 | Samu + Equipo | Pendiente |
-| `ANO-01` | Brainstorming e Ideas | [`anotaciones/01_brainstorming_ideas.md`](anotaciones/01_brainstorming_ideas.md) | Fase 1 | Todo el equipo | Pendiente |
+| `ANO-01` | Brainstorming e Ideas | [`anotaciones/01_brainstorming_ideas.md`](anotaciones/01_brainstorming_ideas.md) | Fase 1 | Todo el equipo | En preparación (Base completada) |
 | `ANO-02` | Bitácora de Reuniones | [`anotaciones/02_bitacora_reuniones.md`](anotaciones/02_bitacora_reuniones.md) | Transversal | Rotativo / Samu | Pendiente |
 | `ANO-03` | Decisiones de Arquitectura (ADR) | [`anotaciones/03_decisiones_arquitectura.md`](anotaciones/03_decisiones_arquitectura.md) | Fase 2–3 | Samu + Equipo | Pendiente |
 | `TODO-F1` | Checklist Fase 1: Investigación y Reto | [`todos/fase_1_investigacion_y_reto.md`](todos/fase_1_investigacion_y_reto.md) | Fase 1 | Todo el equipo | En preparación |
@@ -127,3 +127,4 @@ Leyenda: **R** = Responsable de ejecutar · **A** = Aprobador final · **C** = C
 - **En preparación**: El equipo está completando activamente el documento.
 - **En revisión**: Listo en rama secundaria mediante Pull Request, pendiente de aprobación en `main`.
 - **Aprobado**: Validado y consolidado en `main`.
+

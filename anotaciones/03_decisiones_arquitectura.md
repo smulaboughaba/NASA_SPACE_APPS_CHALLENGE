@@ -35,3 +35,4 @@ Cada vez que el equipo tome una decisión técnica importante (stack, librería 
 - **Qué decidimos:** *(Tecnología, librería o patrón seleccionado)*
 - **Por qué (alternativas descartadas):** *(Razón de la elección frente a otras opciones)*
 - **Quién lo propuso:** *(Nombre / `@usuario`)*
+

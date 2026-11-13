@@ -35,3 +35,4 @@
 - **Próximos pasos:**
   1. Confirmar aceptación de colaboradores en GitHub por parte de `@hviciana`, `@ItsYarosun` y `@jesusorellanagil2002`.
   2. Elegir el Challenge oficial de la NASA y empezar [`../todos/fase_1_investigacion_y_reto.md`](../todos/fase_1_investigacion_y_reto.md).
+

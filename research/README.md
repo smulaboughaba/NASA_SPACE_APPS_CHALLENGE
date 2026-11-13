@@ -15,3 +15,4 @@ Esta carpeta centraliza toda la documentación previa al desarrollo técnico: co
 1. **Citar siempre la fuente oficial**: Incluir el enlace exacto de NASA (`nasa.gov`, `earthdata.nasa.gov`, `api.nasa.gov`, etc.) o de agencias espaciales asociadas.
 2. **Separar hechos de hipótesis**: Indicar claramente qué datos están confirmados en la documentación oficial y qué ideas son suposiciones del equipo por validar.
 3. **Mantener la trazabilidad**: Cualquier fuente añadida aquí que implique cambios técnicos debe reflejarse en [`../dev/shared/README.md`](../dev/shared/README.md) y [`../anotaciones/03_decisiones_arquitectura.md`](../anotaciones/03_decisiones_arquitectura.md).
+
