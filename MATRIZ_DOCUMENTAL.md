@@ -31,7 +31,8 @@ NASA_SPACE_APPS_CHALLENGE/
 │   ├── 01_analisis_del_reto.md            # [RES-01] Análisis del Challenge oficial y criterios del jurado
 │   ├── 02_fuentes_datos_nasa.md           # [RES-02] Catálogo de APIs, datasets y misiones NASA
 │   ├── 03_estado_del_arte_y_solucion.md   # [RES-03] Soluciones existentes, propuesta de valor e impacto
-│   └── 04_plan_de_research_y_evidencias_fusion.md # [RES-04] Plan de research y evidencias de fusión SAR + Open Data
+│   ├── 04_plan_de_research_y_evidencias_fusion.md # [RES-04] Plan de research y evidencias de fusión SAR + Open Data
+│   └── 05_formatos_sar_y_arquitectura_modelos_ia.md # [RES-05] Formatos SAR (HDF5/COG) y evaluación de modelos IA + Big Data
 │
 ├── dev/                                   # Código fuente organizado por módulos técnicos
 │   ├── README.md                          # Normas de arquitectura y desarrollo en ramas
@@ -109,13 +110,14 @@ Leyenda: **R** = Responsable de ejecutar · **A** = Aprobador final · **C** = C
 | `RES-02` | Fuentes y Datos Oficiales NASA | [`research/02_fuentes_datos_nasa.md`](research/02_fuentes_datos_nasa.md) | Fase 1 | Todo el equipo | En preparación (Base completada) |
 | `RES-03` | Estado del Arte y Solución Propuesta | [`research/03_estado_del_arte_y_solucion.md`](research/03_estado_del_arte_y_solucion.md) | Fase 1 | Todo el equipo | En preparación (Base completada) |
 | `RES-04` | Plan de Research y Evidencias de Fusión | [`research/04_plan_de_research_y_evidencias_fusion.md`](research/04_plan_de_research_y_evidencias_fusion.md) | Fase 1 | Todo el equipo | En preparación (Base completada) |
+| `RES-05` | Formatos SAR y Modelos IA + Big Data | [`research/05_formatos_sar_y_arquitectura_modelos_ia.md`](research/05_formatos_sar_y_arquitectura_modelos_ia.md) | Fase 1–2 | Todo el equipo | En preparación (Base completada) |
 | `DEV-01` | Módulo Frontend | [`dev/frontend/README.md`](dev/frontend/README.md) | Fase 2–3 | *Por asignar* | Pendiente |
 | `DEV-02` | Módulo Backend | [`dev/backend/README.md`](dev/backend/README.md) | Fase 2–3 | *Por asignar* | Pendiente |
 | `DEV-03` | Módulo Data Science | [`dev/data_science/README.md`](dev/data_science/README.md) | Fase 2–3 | *Por asignar* | Pendiente |
 | `DEV-04` | Módulo Shared (Contratos y Config) | [`dev/shared/README.md`](dev/shared/README.md) | Fase 2–3 | Samu + Equipo | Pendiente |
 | `ANO-01` | Brainstorming e Ideas | [`anotaciones/01_brainstorming_ideas.md`](anotaciones/01_brainstorming_ideas.md) | Fase 1 | Todo el equipo | En preparación (Base completada) |
 | `ANO-02` | Bitácora de Reuniones | [`anotaciones/02_bitacora_reuniones.md`](anotaciones/02_bitacora_reuniones.md) | Transversal | Rotativo / Samu | Pendiente |
-| `ANO-03` | Decisiones de Arquitectura (ADR) | [`anotaciones/03_decisiones_arquitectura.md`](anotaciones/03_decisiones_arquitectura.md) | Fase 2–3 | Samu + Equipo | Pendiente |
+| `ANO-03` | Decisiones de Arquitectura (ADR) | [`anotaciones/03_decisiones_arquitectura.md`](anotaciones/03_decisiones_arquitectura.md) | Fase 2–3 | Samu + Equipo | En preparación |
 | `TODO-F1` | Checklist Fase 1: Investigación y Reto | [`todos/fase_1_investigacion_y_reto.md`](todos/fase_1_investigacion_y_reto.md) | Fase 1 | Todo el equipo | En preparación |
 | `TODO-F2` | Checklist Fase 2: Arquitectura y Diseño | [`todos/fase_2_arquitectura_y_diseno.md`](todos/fase_2_arquitectura_y_diseno.md) | Fase 2 | Todo el equipo | Pendiente |
 | `TODO-F3` | Checklist Fase 3: Desarrollo e Integración | [`todos/fase_3_desarrollo_e_integracion.md`](todos/fase_3_desarrollo_e_integracion.md) | Fase 3 | Todo el equipo | Pendiente |

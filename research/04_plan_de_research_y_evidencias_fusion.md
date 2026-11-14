@@ -74,3 +74,4 @@ Para convertir este research en una prueba visual irrebatible dentro de la Web A
 | **Hugo** | `@hviciana` | `hugo` | **Caso Local 1 (DANA Valencia / Inundaciones):** recopilar escenas SAR (`EMSR773` / Sentinel-1 / `OPERA DSWx`), datos pluviométricos (`AEMET` / `ERA5` / `GPM`) y modelo de elevación (`DEM`) + infraestructuras (`OSM`). |
 | **Yaro** | `@ItsYarosun` | `yaro` | **Caso Local 2 (Incendios / Deforestación / Cultivos):** recopilar escenas SAR (`Banda L` / `C` / `OPERA DIST`), focos térmicos (`NASA FIRMS`), meteorología y mapas de cobertura (`CORINE` / `WorldCover`). |
 | **Jesús** | `@jesusorellanagil2002` | `jesus` | **Caso Global (Ciclón / El Niño / Terremoto `InSAR`):** recopilar datos globales (`OPERA DISP`, `NOAA IBTrACS / ONI`, catálogo sísmico `USGS`) y estructurar la narrativa *Local ➔ Global* del pitch. |
+
