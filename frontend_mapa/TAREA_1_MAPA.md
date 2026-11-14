@@ -1,19 +1,24 @@
-# Tarea 1 — Visor Geoespacial SAR (`frontend_mapa/`)
+# Tarea 2 de Visualización — Visor Animado de 4 Hyperframes (`frontend_mapa/`)
 
 ## Objetivo
-Construir un módulo visual interactivo con **Leaflet** que muestre los 4 eventos de `datos_compartidos/mock_events_contract.json`, permita alternar entre escala **Local** y **Global**, dibuje la zona afectada (`bbox`) y ofrezca un control temporal (`t0_pre` ➔ `t1_event` ➔ `t2_post_sar`) con métricas radar.
+Construir en `frontend_mapa/` un reproductor geoespacial animado con **Leaflet** que recorra paso a paso los **4 Hyperframes** generados en `data_inundaciones/hyperframes_dana_valencia.json`, mostrando la ceguera óptica por nubes, el barrido SAR con vista previa real de NASA y el filtro de falsos positivos IA. *(Samu lo integrará después en el motor Vite + MapLibre/Deck.gl + GSAP de `main`).*
 
 ---
 
 ## Prompt listo para copiar y pegar en Claude Code
 ```text
-Lee CLAUDE.md, datos_compartidos/mock_events_contract.json y datos_compartidos/FUENTES_Y_CONTEXTO_HUGO.md.
+Lee CLAUDE.md, datos_compartidos/mock_events_contract.json, datos_compartidos/FUENTES_Y_CONTEXTO_HUGO.md y data_inundaciones/hyperframes_dana_valencia.json (si existe).
 Trabaja ÚNICAMENTE dentro de la carpeta frontend_mapa/ (no modifiques ningún archivo fuera de ella).
 
-Crea allí una aplicación web limpia y responsive (index.html, styles.css, app.js) con diseño oscuro espacial profesional usando Leaflet desde CDN:
-1. Selector rápido arriba con filtro de escala ("Todos", "Local", "Global") y botones para los 4 eventos de mock_events_contract.json (dana-valencia-2024 seleccionado por defecto).
-2. Mapa Leaflet que haga zoom suave hacia event.center_coords ([lat, lon]) y dibuje un polígono/rectángulo interactivo usando event.bbox ([minLon, minLat, maxLon, maxLat] convertido correctamente a [[minLat, minLon], [maxLat, maxLon]]).
-3. Un control deslizante o selector temporal de 3 pasos usando dates.t0_pre, dates.t1_event y dates.t2_post_sar para simular visualmente la diferencia entre "Óptico bloqueado por nubes/humo" vs "Detección SAR + Anomalía Latente" cambiando estilo/opacidad del área en el mapa y su etiqueta explicativa.
-4. Panel lateral de telemetría mostrando: location, sensor_reference, band, polarization, mechanism, affected_area_km2, jepa_latent_anomaly_score, false_positive_reduction_pct, y el bloque legal attributions en el pie.
-5. Carga los datos haciendo fetch('../datos_compartidos/mock_events_contract.json') y añade un botón de vista previa limpio por si se sirve con python3 -m http.server desde la raíz.
+Crea en frontend_mapa/ una interfaz web oscura de alto impacto visual (index.html, styles.css, app.js) con Leaflet desde CDN:
+1. Carga primero ../data_inundaciones/hyperframes_dana_valencia.json vía fetch y también ../datos_compartidos/mock_events_contract.json (incluye un fallback en JS por si hyperframes_dana_valencia.json aún no se ha generado o falla la carga local).
+2. Mapa Leaflet interactivo centrado en dana-valencia-2024 con transición suave (flyTo / flyToBounds según camera.center y camera.zoom del Hyperframe activo) dibujando el bbox oficial de Valencia.
+3. Reproductor animado de los 4 Hyperframes en la parte inferior:
+   - Botón Play / Pausa (auto-avance cada 3.5s) y botones directos para los 4 frames:
+     1) Pre-evento (t0_pre)
+     2) Crisis y Ceguera Óptica (cloud_cover_pct animando una capa visual de nubes sobre el bbox)
+     3) Barrido Radar SAR Nivel 1 (animación de línea de escáner radar que revela una L.imageOverlay / tarjeta con visual_layer.sar_browse_url real de NASA y caída -6.8 dB)
+     4) Fusión IA Nivel 2 + SHAP (resalta las métricas verificadas: 152.4 km² y reducción de 34.2% de falsos positivos).
+4. Panel lateral de telemetría viva que muestre en cada frame: stage, headline, ai_pipeline_layer, métricas reales (lluvia mm, % nubosidad, anomaly_score) y al pie los créditos de attributions del JSON.
+5. Mantén el código desacoplado (exportando si ayuda un objeto con los hooks de render) para facilitar su futura integración en Vite + MapLibre/Deck.gl + GSAP.
 ```
