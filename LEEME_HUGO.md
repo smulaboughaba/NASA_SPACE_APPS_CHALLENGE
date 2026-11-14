@@ -1,38 +1,39 @@
 # Guía Rápida para Hugo (`@hviciana`) — Rama `hugo`
 
-Bienvenido a tu espacio de trabajo limpio. Tu misión en este bloque es **validar la viabilidad real del caso DANA Valencia 2024** (cruzando satélite NASA real sin clave + Open Big Data de lluvia/nubes) y crear su **visor animado por 4 Hyperframes**.
+Bienvenido a tu espacio de trabajo actualizado. Tu caso asignado ahora es: **Sequía Extrema e Incendios Forestales de Los Ángeles (Enero 2025 — *Palisades & Eaton Fires*)**.
+
+> **Importante:** **NO tienes que programar modelos de IA ni cosas complicadas.** Tu trabajo más importante aquí es **descargar y analizar datos reales de NASA + clima/gases** para comprobar que son limpios y compatibles con el pipeline que luego montará Samu.
 
 ---
 
 ## 1. ¿Qué carpetas hay aquí?
-- `datos_compartidos/` *(SOLO LECTURA)*: Contrato JSON común y endpoints reales NASA CMR/ASF + Open-Meteo ERA5 ya verificados. **No lo edites.**
-- `data_inundaciones/` *(TU CARPETA 1 — Empezar aquí)*: `TAREA_2_DATOS.md` genera los datos reales de viabilidad y el archivo animado **`hyperframes_dana_valencia.json`**.
-- `frontend_mapa/` *(TU CARPETA 2)*: `TAREA_1_MAPA.md` construye el visor Leaflet animado con los **4 Hyperframes** (luego Samu lo integrará en el shell **Vite + MapLibre/Deck.gl + GSAP** de `main`).
+- `datos_compartidos/` *(SOLO LECTURA)*: Contrato JSON y URLs reales verificadas (sin API key ni logins). **No lo edites.**
+- `data_sequia_incendios_la/` *(TU CARPETA 1 — PRIORIDAD #1)*: Abre `TAREA_1_COMPATIBILIDAD_DATOS.md` y dile a Claude Code que la ejecute paso a paso.
+- `frontend_mapa/` *(TU CARPETA 2 — DESPUÉS DE LOS DATOS)*: Abre `TAREA_2_MAPA_EXPLORATORIO.md` para montar un mapa exploratorio sencillo con Leaflet.
 
-> **Importante:** **NO ejecutes `git merge origin/main`** en esta rama. Trabaja siempre en `hugo` y no modifiques `CLAUDE.md`, `LEEME_HUGO.md` ni `datos_compartidos/`.
+> **Aviso Git:** **NO ejecutes `git merge origin/main`** en esta rama. Trabaja siempre en `hugo` y no modifiques `CLAUDE.md`, `LEEME_HUGO.md` ni `datos_compartidos/`.
 
 ---
 
-## 2. Orden recomendado con Claude Code (VS Code)
-1. Asegúrate de estar en tu rama:
+## 2. Cómo trabajar con Claude Code en VS Code
+1. Actualiza tu rama local:
    ```bash
    git checkout hugo
    git pull origin hugo
    ```
-2. **Paso 1 (Validar datos reales y Hyperframes):** Abre Claude Code y pega el prompt de **`data_inundaciones/TAREA_2_DATOS.md`**. Esto consultará en vivo NASA CMR/ASF y Open-Meteo ERA5, y generará `data_inundaciones/hyperframes_dana_valencia.json` + `data_inundaciones/viabilidad_dana_valencia.md`.
-3. **Paso 2 (Visor animado):** Copia y pega el prompt de **`frontend_mapa/TAREA_1_MAPA.md`**.
-4. Pruébalo en local:
+2. **Paso 1 (Prioridad — Estudio de Compatibilidad de Datos):** En Claude Code, copia y pega el prompt de **`data_sequia_incendios_la/TAREA_1_COMPATIBILIDAD_DATOS.md`**. Al terminar, revisa el archivo `data_sequia_incendios_la/informe_viabilidad_la.md` que habrá redactado.
+3. **Paso 2 (Secundario — Visor Exploratorio):** Copia y pega el prompt de **`frontend_mapa/TAREA_2_MAPA_EXPLORATORIO.md`** y pruébalo en el navegador con:
    ```bash
    python3 -m http.server 8000
    ```
-   *(Abre `http://localhost:8000/frontend_mapa/` en tu navegador).*
+   *(Entra en `http://localhost:8000/frontend_mapa/`)*.
 
 ---
 
-## 3. Subir tus cambios sin errores
+## 3. Cómo subir tus avances sin errores
 ```bash
 git status
-git add data_inundaciones frontend_mapa
-git commit -m "feat(hugo): validar viabilidad DANA NASA+ERA5 y visor animado 4 hyperframes"
+git add data_sequia_incendios_la frontend_mapa
+git commit -m "feat(hugo): estudio compatibilidad datos LA 2025 y visor exploratorio"
 git push origin hugo
 ```

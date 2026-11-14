@@ -2,29 +2,31 @@
 
 Eres el asistente de programación en VS Code para **Hugo** (`@hviciana`) en el **NASA Space Apps Challenge** (*Dancing with the SAR's*).
 
-## 1. Regla crítica de rutas (Candado automático de GitHub)
+## 1. Misión Realista (NO programar modelos IA)
+Tu objetivo **NO** es programar, entrenar ni tocar modelos de IA (`T-SAR-JEPA` ni `LightGBM`). De eso se encarga Samu al volver.
+Tu objetivo es realizar un **Estudio de Compatibilidad de Datos (EDA)** del caso **Sequía Extrema e Incendios Forestales de Los Ángeles (enero 2025 — *Palisades & Eaton Fires*)** para demostrar con datos reales si el satélite radar SAR y las variables atmosféricas/edáficas encajan bien para alimentar el pipeline de Samu.
+
+## 2. Regla crítica de rutas (Candado automático de GitHub)
 **SOLO puedes crear, editar o borrar archivos dentro de estas 2 carpetas:**
-- `data_inundaciones/` (Tarea 1 de Validación: cruce Satélite NASA SAR + Open Big Data DANA Valencia ➔ `hyperframes_dana_valencia.json` y `viabilidad_dana_valencia.md`)
-- `frontend_mapa/` (Tarea 2 de Visualización: visor Leaflet con reproductor animado de los 4 Hyperframes para integrarse luego en Vite + MapLibre/Deck.gl + GSAP)
+- `data_sequia_incendios_la/` (**Tarea 1 prioritaria:** script Python `analizar_compatibilidad_la.py`, `dataset_compatibilidad_la.csv`, `reporte_compatibilidad_la.json` e `informe_viabilidad_la.md`)
+- `frontend_mapa/` (**Tarea 2 secundaria:** visor exploratorio Leaflet con los datos compatibles)
 
 **PROHIBIDO modificar, crear o borrar:**
 - `CLAUDE.md`, `LEEME_HUGO.md`, `.gitignore`, `.github/`
 - Todo lo que haya en `datos_compartidos/` (**SOLO LECTURA**)
-- Cualquier archivo fuera de `data_inundaciones/` y `frontend_mapa/`
+- Cualquier archivo fuera de `data_sequia_incendios_la/` y `frontend_mapa/`
 
-*(Si Hugo hace `push` tocando cualquier ruta fuera de esas 2 carpetas, GitHub Actions bloqueará el push y revertirá la rama automáticamente).*
-
----
-
-## 2. Arquitectura y Contrato de Datos (`datos_compartidos/`)
-
-1. **`datos_compartidos/mock_events_contract.json`** (solo lectura): contrato base de 4 eventos (`dana-valencia-2024` es tu evento principal).
-   - Claves exactas de `dana-valencia-2024`: `id`, `title`, `scale`, `niche`, `location`, `center_coords` (`[39.42, -0.42]`), `bbox` (`[-0.85, 39.15, -0.25, 39.58]`, orden `[minLon, minLat, maxLon, maxLat]`), `dates` (`t0_pre`, `t1_event`, `t2_post_sar`), `sar_signature` (`sensor_reference`, `band`, `polarization`, `mechanism`, `mean_backscatter_drop_db`, `jepa_latent_anomaly_score`, `affected_area_km2`, `false_positive_reduction_pct`), `open_data_metrics`, `shap_attributions`, `storytelling_summary`, `attributions`.
-2. **`datos_compartidos/FUENTES_Y_CONTEXTO_HUGO.md`** (solo lectura): contiene las **URLs verificadas sin API key** de NASA CMR (`OPERA DSWx-S1` / `RTC-S1`), NASA ASF (`Sentinel-1` GeoJSON), Open-Meteo ERA5 (incluyendo nubosidad `cloud_cover_mean`), y el esquema exacto de los **4 Hyperframes** (`frame_1_pre`, `frame_2_event_blindness`, `frame_3_sar_level1`, `frame_4_fusion_level2_shap`).
+*(GitHub Actions bloqueará y revertirá automáticamente cualquier push fuera de esas 2 carpetas).*
 
 ---
 
-## 3. Reglas técnicas
-1. **`data_inundaciones/`:** Scripts Python puros (`urllib.request`, `json`, `csv`, sin `pip install`) consultando las APIs reales, validando la coherencia temporal entre satélite y clima, y generando JSON ligero (<1 MB).
-2. **`frontend_mapa/`:** HTML/CSS/JS limpio (Leaflet desde CDN), cargando primero `../data_inundaciones/hyperframes_dana_valencia.json` (con fallback a `../datos_compartidos/mock_events_contract.json`), diseñado de forma modular para conectarse después al motor **Vite + MapLibre/Deck.gl + GSAP** de `main`.
-3. Comenta en español e indica al usuario exactamente qué archivos creaste dentro de sus 2 carpetas.
+## 3. Referencias (`datos_compartidos/`)
+1. `datos_compartidos/mock_events_contract.json` (solo lectura): tu caso principal es `events[0]` (`"id": "incendio-sequia-los-angeles-2025"`, `center_coords: [34.07, -118.54]`, `bbox: [-118.70, 33.95, -117.95, 34.30]`, `dates: t0_pre=2025-01-02, t1_event=2025-01-08, t2_post_sar=2025-01-14, t3_followup_sar=2025-01-21`).
+2. `datos_compartidos/FUENTES_Y_CONTEXTO_HUGO.md` (solo lectura): contiene las **URLs verificadas sin API key** de NASA ASF (`Sentinel-1 GRD_HD`), NASA CMR (`OPERA RTC-S1`, `DIST-ALERT-HLS`, `DISP-S1`), `Open-Meteo ERA5` (sequía, temperatura, humedad, vientos) y `Open-Meteo Air Quality CAMS` (CO, NO2, PM2.5, PM10, AOD).
+
+---
+
+## 4. Reglas técnicas
+1. **`data_sequia_incendios_la/`:** Python puro usando solo librería estándar (`urllib.request`, `json`, `csv`, `datetime`), sin `pip install`. Nunca inventes números: si una API fallara, reporta el error exacto.
+2. **`frontend_mapa/`:** HTML/CSS/JS limpio con Leaflet desde CDN cargando datos ligeros locales/JSON sin compilación ni Node.js.
+3. Explica a Hugo al finalizar qué archivos creaste y qué conclusiones salieron sobre la compatibilidad de los datos.

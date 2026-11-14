@@ -1,10 +1,109 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "project": "Dancing with the SAR's",
-  "generated_by": "Samu (@smulaboughaba) - Shared Data Contract for Frontend & IA",
+  "generated_by": "Samu (@smulaboughaba) - Shared Data Contract for Compatibility EDA, Frontend & IA",
   "events": [
     {
+      "id": "incendio-sequia-los-angeles-2025",
+      "assigned_to": "hugo",
+      "title": "Sequía Extrema e Incendios de Los Ángeles (Palisades & Eaton, 2025)",
+      "scale": "local",
+      "niche": "sequia_incendios",
+      "location": "Los Ángeles (Pacific Palisades / Sierra Madre, California, EE. UU.)",
+      "center_coords": [34.07, -118.54],
+      "bbox": [-118.70, 33.95, -117.95, 34.30],
+      "dates": {
+        "t0_pre": "2025-01-02",
+        "t1_event": "2025-01-08",
+        "t2_post_sar": "2025-01-14",
+        "t3_followup_sar": "2025-01-21"
+      },
+      "sar_signature": {
+        "sensor_reference": "Sentinel-1 GRD_HD (VV+VH) / NASA OPERA RTC-S1, DIST-ALERT & DISP-S1 (InSAR) / UAVSAR L-Band",
+        "band": "L-Band (24 cm) & C-Band (5.6 cm)",
+        "polarization": "VV + VH",
+        "mechanism": "Polarimetría (pérdida volumétrica de dosel) + InSAR DISP-S1 (deformación de laderas)",
+        "mean_backscatter_drop_db": -4.2,
+        "jepa_latent_anomaly_score": 0.93,
+        "affected_area_km2": 154.0,
+        "false_positive_reduction_pct": 31.5
+      },
+      "open_data_metrics": {
+        "soil_moisture_0_to_7cm_m3m3": 0.098,
+        "min_relative_humidity_pct": 12,
+        "max_wind_gust_kmh": 86.0,
+        "peak_carbon_monoxide_ugm3": 7380.0,
+        "peak_pm2_5_ugm3": 328.8,
+        "post_fire_debris_flow_risk_zones": 19,
+        "affected_land_cover_ha": {
+          "chaparral_bosque_montano": 11200,
+          "interfaz_urbano_forestal": 3650,
+          "laderas_inestables_insar": 550
+        }
+      },
+      "shap_attributions": [
+        { "feature": "Caída polarización cruzada VH/VV + deformación DISP-S1", "contribution_pct": 36 },
+        { "feature": "Sequía edáfica (soil_moisture) + humedad 12% y vientos Santa Ana (ERA5)", "contribution_pct": 31 },
+        { "feature": "Pluma de combustión CO y PM2.5 (CAMS)", "contribution_pct": 21 },
+        { "feature": "Pendiente DEM y riesgo de deslizamiento post-incendio", "contribution_pct": 12 }
+      ],
+      "storytelling_summary": "Tras meses de sequía extrema (humedad del suelo 0.098 m3/m3) y rachas Santa Ana de 86 km/h, la densa pluma de humo y gases (pico de 7380 ug/m3 de CO y 328.8 ug/m3 de PM2.5) cegó los sensores ópticos sobre Los Ángeles. Las pasadas SAR Sentinel-1 y OPERA atravesaron el humo y, junto a DISP-S1 y ERA5, separaron el área calcinada real del terreno seco identificando laderas inestables.",
+      "attributions": [
+        "NASA ASF DAAC / JPL OPERA (RTC-S1, DIST-ALERT, DISP-S1) & UAVSAR",
+        "ESA Copernicus Sentinel-1",
+        "Copernicus ERA5 & CAMS vía Open-Meteo"
+      ]
+    },
+    {
+      "id": "ciclon-elnino-global",
+      "assigned_to": "yaro",
+      "title": "El Niño y Ciclón Costero en el Pacífico (Escala Global)",
+      "scale": "global",
+      "niche": "cambio_terreno",
+      "location": "Cuenca Pacífico Oriental / Costa de Acapulco, México",
+      "center_coords": [16.85, -99.82],
+      "bbox": [-100.30, 16.50, -99.30, 17.20],
+      "dates": {
+        "t0_pre": "2023-10-15",
+        "t1_event": "2023-10-25",
+        "t2_post_sar": "2023-10-29"
+      },
+      "sar_signature": {
+        "sensor_reference": "Sentinel-1 GRD_HD (VV+VH) / NASA OPERA RTC & DSWx / NISAR SweepSAR (>240 km swath)",
+        "band": "L-Band (24 cm) & S-Band (9.4 cm)",
+        "polarization": "VV + VH / HH + HV",
+        "mechanism": "Backscatter + Cambio de rugosidad, inundación y pérdida de cobertura costera",
+        "mean_backscatter_drop_db": -5.1,
+        "jepa_latent_anomaly_score": 0.89,
+        "affected_area_km2": 410.0,
+        "false_positive_reduction_pct": 31.0
+      },
+      "open_data_metrics": {
+        "noaa_oni_index_anomaly_c": 1.8,
+        "max_sustained_wind_kmh": 260,
+        "storm_rainfall_mm": 380,
+        "affected_land_cover_ha": {
+          "costa_manglar": 8900,
+          "urbano_costero": 5400,
+          "cultivos_valle": 26700
+        }
+      },
+      "shap_attributions": [
+        { "feature": "Anomalía Backscatter SAR post-ciclón", "contribution_pct": 39 },
+        { "feature": "Trayectoria y vientos extremos (NOAA IBTrACS / ERA5)", "contribution_pct": 28 },
+        { "feature": "Índice El Niño (NOAA ONI +1.8 °C) y anomalía pluviométrica", "contribution_pct": 19 },
+        { "feature": "Cota costera DEM (SRTM)", "contribution_pct": 14 }
+      ],
+      "storytelling_summary": "Bajo la fase intensa de El Niño (+1.8 °C en índice ONI), la rápida intensificación ciclónica cubrió cientos de kilómetros bajo nubes opacas. El ancho de barrido SweepSAR (>240 km) y las escenas Sentinel-1/OPERA capturaron el impacto en manglares, cultivos y zonas urbanas al cruzarlas con ERA5 y NOAA.",
+      "attributions": [
+        "NASA ASF DAAC / JPL NISAR & OPERA",
+        "NOAA IBTrACS & Oceanic Niño Index (ONI)",
+        "Copernicus ERA5 vía Open-Meteo & NASA SRTM DEM"
+      ]
+    },
+    {
       "id": "dana-valencia-2024",
+      "assigned_to": "jesus",
       "title": "DANA Valencia — Inundaciones Súbitas (2024)",
       "scale": "local",
       "niche": "inundaciones",
@@ -17,7 +116,7 @@
         "t2_post_sar": "2024-10-31"
       },
       "sar_signature": {
-        "sensor_reference": "Sentinel-1 (C-Band) / Equivalente operativo NISAR L-Band + OPERA DSWx",
+        "sensor_reference": "Sentinel-1 GRD_HD (VV+VH) / NASA OPERA DSWx-S1 & RTC-S1",
         "band": "L-Band (24 cm) / C-Band (5.6 cm)",
         "polarization": "VV + VH",
         "mechanism": "Backscatter (reflexión especular en lámina de agua)",
@@ -38,67 +137,21 @@
         "critical_roads_intersected": 47
       },
       "shap_attributions": [
-        { "feature": "Caída Backscatter SAR (dB)", "contribution_pct": 41 },
-        { "feature": "Precipitación acumulada (AEMET/ERA5)", "contribution_pct": 29 },
+        { "feature": "Caída Backscatter SAR (dB) en OPERA DSWx-S1", "contribution_pct": 41 },
+        { "feature": "Precipitación acumulada y saturación suelo (ERA5 / AEMET)", "contribution_pct": 29 },
         { "feature": "Baja pendiente / cota DEM (SRTM)", "contribution_pct": 21 },
         { "feature": "Proximidad a cauce (OSM/Hidrografía)", "contribution_pct": 9 }
       ],
-      "storytelling_summary": "Mientras las nubes convectivas cegaban los satélites ópticos durante el 29–31 de octubre, el radar SAR atravesó la tormenta detectando las láminas de agua. Al fusionarlo con el DEM y la pluviometría, se eliminaron falsos positivos urbanos/montañosos y se cuantificó el impacto real sobre cultivos y carreteras.",
+      "storytelling_summary": "Mientras la nubosidad convectiva (95–100%) cegaba los satélites ópticos durante el 29–31 de octubre, el radar SAR atravesó la tormenta detectando las láminas de agua en OPERA DSWx-S1. Al fusionarlo con pendiente DEM y precipitación ERA5, se eliminaron falsos positivos urbanos/montañosos.",
       "attributions": [
         "Copernicus EMS (EMSR773) / ESA Sentinel-1",
-        "NASA ASF DAAC & JPL OPERA / SRTM DEM",
-        "AEMET / ERA5 & OpenStreetMap contributors"
-      ]
-    },
-    {
-      "id": "incendio-forestal-mediterraneo",
-      "title": "Incendio Forestal de Alta Severidad (Demo Local)",
-      "scale": "local",
-      "niche": "incendios",
-      "location": "Arco Mediterráneo / Península Ibérica",
-      "center_coords": [39.95, -0.58],
-      "bbox": [-0.80, 39.80, -0.35, 40.12],
-      "dates": {
-        "t0_pre": "2023-03-10",
-        "t1_event": "2023-03-23",
-        "t2_post_sar": "2023-03-31"
-      },
-      "sar_signature": {
-        "sensor_reference": "NASA OPERA DIST / Sentinel-1 + Simulación Banda L (ALOS/NISAR)",
-        "band": "L-Band (24 cm) & S-Band (9.4 cm)",
-        "polarization": "HV / VH (polarización cruzada volumétrica)",
-        "mechanism": "Polarimetry & Backscatter (pérdida de dosel/ramas)",
-        "mean_backscatter_drop_db": -3.4,
-        "jepa_latent_anomaly_score": 0.84,
-        "affected_area_km2": 47.0,
-        "false_positive_reduction_pct": 28.5
-      },
-      "open_data_metrics": {
-        "nasa_firms_hotspots": 186,
-        "max_wind_gust_kmh": 62,
-        "mean_slope_deg_burned": 18.4,
-        "affected_land_cover_ha": {
-          "bosque_coniferas": 3120,
-          "matorral": 1240,
-          "cultivos_borde": 340
-        },
-        "post_fire_mudslide_risk_zones": 12
-      },
-      "shap_attributions": [
-        { "feature": "Pérdida polarización cruzada HV/VH", "contribution_pct": 38 },
-        { "feature": "Densidad focos térmicos (NASA FIRMS)", "contribution_pct": 33 },
-        { "feature": "Cobertura forestal previa (CORINE/WorldCover)", "contribution_pct": 17 },
-        { "feature": "Pendiente ladera DEM (riesgo post-fuego)", "contribution_pct": 12 }
-      ],
-      "storytelling_summary": "El humo denso bloquea las cámaras ópticas durante el frente activo. El cruce de focos térmicos NASA FIRMS con la caída de polarización cruzada SAR cuantifica el daño estructural del bosque y señala qué laderas empinadas corren riesgo de deslizamiento con las lluvias posteriores.",
-      "attributions": [
-        "NASA FIRMS (VIIRS/MODIS) & NASA ASF DAAC",
-        "NASA JPL OPERA DIST / NISAR StoryMaps",
-        "Copernicus CORINE / ESA WorldCover"
+        "NASA ASF DAAC & JPL OPERA (DSWx-S1 / RTC-S1) / SRTM DEM",
+        "Copernicus ERA5 vía Open-Meteo & OpenStreetMap contributors"
       ]
     },
     {
       "id": "terremoto-insar-global",
+      "assigned_to": "samu",
       "title": "Deformación Co-sísmica InSAR (Escala Global)",
       "scale": "global",
       "niche": "terremotos",
@@ -142,59 +195,13 @@
         "USGS Earthquake Hazards Program",
         "OpenStreetMap contributors"
       ]
-    },
-    {
-      "id": "ciclon-elnino-global",
-      "title": "Ciclón Tropical y Teleconexión El Niño (Escala Global)",
-      "scale": "global",
-      "niche": "cambio_terreno",
-      "location": "Cuenca Pacífico / Área Costera de Impacto Global",
-      "center_coords": [16.85, -99.82],
-      "bbox": [-100.30, 16.50, -99.30, 17.20],
-      "dates": {
-        "t0_pre": "2023-10-15",
-        "t1_event": "2023-10-25",
-        "t2_post_sar": "2023-10-29"
-      },
-      "sar_signature": {
-        "sensor_reference": "Sentinel-1 / NASA OPERA RTC & DSWx / NISAR SweepSAR (>240 km swath)",
-        "band": "L-Band (24 cm) & S-Band (9.4 cm)",
-        "polarization": "VV + VH / HH + HV",
-        "mechanism": "Backscatter + Cambio de rugosidad y cobertura",
-        "mean_backscatter_drop_db": -5.1,
-        "jepa_latent_anomaly_score": 0.89,
-        "affected_area_km2": 410.0,
-        "false_positive_reduction_pct": 31.0
-      },
-      "open_data_metrics": {
-        "noaa_oni_index_anomaly_c": 1.8,
-        "max_sustained_wind_kmh": 260,
-        "storm_rainfall_mm": 380,
-        "affected_land_cover_ha": {
-          "costa_manglar": 8900,
-          "urbano_costero": 5400,
-          "cultivos_valle": 26700
-        }
-      },
-      "shap_attributions": [
-        { "feature": "Anomalía Backscatter SAR post-ciclón", "contribution_pct": 39 },
-        { "feature": "Trayectoria y vientos (NOAA IBTrACS)", "contribution_pct": 28 },
-        { "feature": "Índice El Niño (NOAA ONI) + SST", "contribution_pct": 19 },
-        { "feature": "Cota costera DEM (SRTM)", "contribution_pct": 14 }
-      ],
-      "storytelling_summary": "Escalamos de la DANA local a fenómenos planetarios como ciclones potenciados por El Niño: el ancho de barrido >240 km de NISAR SweepSAR permite vigilar franjas costeras enteras y cruzar la inundación/daño con índices climáticos globales NOAA.",
-      "attributions": [
-        "NASA ASF DAAC / JPL NISAR & OPERA",
-        "NOAA IBTrACS & Oceanic Niño Index (ONI)",
-        "NASA SRTM DEM & ESA WorldCover"
-      ]
     }
   ],
   "sar_concepts": [
     {
       "id": "l-band",
       "title": "L-Band (24 cm) — NASA JPL",
-      "summary": "Longitud de onda larga que atraviesa copas de árboles y nubes. Ideal para bosques, biomasa, humedad del suelo, glaciares y deformaciones InSAR."
+      "summary": "Longitud de onda larga que atraviesa copas de árboles, humo y nubes. Ideal para bosques, humedad del suelo, sequía, glaciares y deformaciones InSAR."
     },
     {
       "id": "s-band",
@@ -204,18 +211,17 @@
     {
       "id": "backscatter",
       "title": "Backscatter (Retrodispersión)",
-      "summary": "Cantidad de energía radar que rebota hacia el satélite. El agua en calma actúa como espejo (señal oscura muy baja), revelando inundaciones bajo las nubes."
+      "summary": "Cantidad de energía radar que rebota hacia el satélite. El agua en calma actúa como espejo (señal oscura) y la pérdida de vegetación reduce el rebote volumétrico."
     },
     {
       "id": "insar",
       "title": "InSAR (Interferometría)",
-      "summary": "Compara la fase de la onda entre dos pasadas para detectar desplazamientos milimétricos o centimétricos del suelo tras terremotos o deslizamientos."
+      "summary": "Compara la fase de la onda entre dos pasadas para detectar desplazamientos milimétricos o centimétricos del suelo tras terremotos o en laderas post-incendio."
     },
     {
       "id": "polarizacion",
       "title": "Polarización (HH, HV, VV, VH)",
-      "summary": "Orientación de emisión y recepción de la onda radar. Permite distinguir superficie de agua frente a vegetación volumétrica (bosques/incendios) o edificios."
+      "summary": "Orientación de emisión y recepción de la onda radar. Permite distinguir agua frente a vegetación volumétrica (bosques/incendios) o estructuras urbanas."
     }
   ]
 }
-
