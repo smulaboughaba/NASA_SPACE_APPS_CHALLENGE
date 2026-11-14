@@ -23,20 +23,20 @@ get_member_config() {
     hugo)
       SRC_FE="frontend_mapa"
       DST_FE="dev/frontend/hugo_mapa"
-      SRC_DS="data_inundaciones"
-      DST_DS="dev/data_science/hugo_inundaciones"
+      SRC_DS="data_sequia_incendios_la"
+      DST_DS="dev/data_science/hugo_sequia_incendios_la"
       ;;
     yaro)
       SRC_FE="frontend_analytics"
       DST_FE="dev/frontend/yaro_analytics"
-      SRC_DS="data_incendios_cultivos"
-      DST_DS="dev/data_science/yaro_incendios_cultivos"
+      SRC_DS="data_elnino_ciclon"
+      DST_DS="dev/data_science/yaro_elnino_ciclon"
       ;;
     jesus)
       SRC_FE="frontend_storytelling"
       DST_FE="dev/frontend/jesus_storytelling"
-      SRC_DS="data_global_insar"
-      DST_DS="dev/data_science/jesus_global_insar"
+      SRC_DS="data_dana_valencia"
+      DST_DS="dev/data_science/jesus_dana_valencia"
       ;;
     *)
       echo "Integrante no válido: '$member'. Usa hugo, yaro, jesus o all." >&2

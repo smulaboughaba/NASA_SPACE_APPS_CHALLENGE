@@ -1,49 +1,47 @@
-# Guía Autónoma del Equipo (Validación Satélite SAR + Open Data y Hyperframes)
+# Guía Autónoma del Equipo — Estudio de Compatibilidad de Datos (EDA)
 
 > **Código:** `DEV-00`  
-> **Arquitectura vinculada:** `ADR-003` (**Vite + MapLibre GL / Deck.gl + GSAP Hyperframes** en `main`) y `RES-06`  
-> **Para:** Hugo (`@hviciana`), Yaro (`@ItsYarosun`) y Jesús (`@jesusorellanagil2002`)  
-> **Coordinación Backend + IA + Shell Vite:** Samu (`@smulaboughaba`)
+> **Enfoque:** Validación realista de datos reales (`NASA SAR` + `Open Big Data`) para comprobar compatibilidad con el pipeline IA de Samu (**no tenéis que programar modelos IA**)  
+> **Integración Backend/IA + Vite/MapLibre:** Samu (`@smulaboughaba`)
 
 ---
 
-## 1. Objetivo Central de Vuestras Ramas Aisladas
+## 1. Regla Principal de Vuestra Misión
 
-Cada uno valida de extremo a extremo **1 caso de storytelling real** para confirmar que los datos de satélite **NASA SAR** (consultados en APIs públicas sin clave: **NASA CMR** y **NASA ASF GeoJSON**) y los datos **Open Big Data** (`Open-Meteo ERA5` con nubosidad `cloud_cover_mean`, `USGS Earthquake API`, `NASA FIRMS`) coinciden temporal y físicamente, generan una secuencia animada de **4 Hyperframes (`hyperframes_<caso>.json`)** y alimentan la Web App final en **Vite + MapLibre GL/Deck.gl + GSAP** que ensamblará Samu.
+1. **Vuestro foco #1 es el análisis de datos realistas (EDA de compatibilidad), NO entrenar ni programar modelos `T-SAR-JEPA` o `LightGBM`.**
+2. Cada uno comprueba en su caso real si las fechas de satélite **NASA ASF / CMR** encajan ($\Delta t$) con los datos abiertos **Open-Meteo ERA5 / CAMS** y si las variables propuestas dan señal limpia y sin huecos.
+3. Samu revisará vuestros informes y datasets desde `main` para validar el pipeline IA y diseñar la conexión interactiva en tiempo real (<15 ms en Nivel 2) con la interfaz **Vite + MapLibre/Deck.gl + GSAP**.
 
-> **Regla de seguridad automática (`.github/workflows/branch-access-control.yml`):**
+> **Candado automático de GitHub (`.github/workflows/branch-access-control.yml`):**
 > - **NO ejecutéis `git merge origin/main`** en vuestras ramas aisladas (`hugo`, `yaro`, `jesus`).
-> - Solo podéis modificar archivos dentro de **vuestras 2 carpetas de trabajo**. Todo lo de `datos_compartidos/`, `CLAUDE.md`, `GEMINI.md`, `LEEME_*.md` y `.github/` es de solo lectura.
+> - Trabajad únicamente dentro de **vuestras 2 carpetas asignadas**. Cualquier edición fuera será bloqueada y revertida automáticamente.
 
 ---
 
-## 2. Reparto Exacto: Rama, Agente IA, Caso y Entregables
+## 2. Reparto Exacto de Casos, Ramas y Carpetas
 
-| Integrante | Rama Git | Agente IA | Caso asignado (`mock_events_contract.json`) | Carpeta Datos + Viabilidad (`hyperframes_*.json`) | Carpeta UI Animada (*4 Hyperframes*) | Destino en `main` |
+| Integrante | Rama Git | Agente IA | Caso Asignado (`mock_events_contract.json`) | Carpeta 1 (Prioritaria — EDA Compatibilidad) | Carpeta 2 (Secundaria — Visor Exploratorio) | Destino al importar en `main` |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Hugo** (`@hviciana`) | `hugo` | **Claude Code (VS Code)** | **DANA Valencia 2024** (`dana-valencia-2024`) | `data_inundaciones/` (`validar_viabilidad_dana.py`, `viabilidad_dana_valencia.md`) | `frontend_mapa/` (Visor + reproductor animado 4 Hyperframes) | `dev/*/hugo_*` |
-| **Yaro** (`@ItsYarosun`) | `yaro` | **Claude Code (VS Code)** | **Incendio Alto Mijares y Cultivos** (`incendio-forestal-mediterraneo`) | `data_incendios_cultivos/` (`validar_viabilidad_incendio.py`, `viabilidad_incendio_cultivos.md`) | `frontend_analytics/` (Gráficas dinámicas por Hyperframe + SHAP) | `dev/*/yaro_*` |
-| **Jesús** (`@jesusorellanagil2002`) | `jesus` | **Gemini Flash 3.8 (Antigravity)** | **Terremoto InSAR + Ciclón/El Niño Global** (`terremoto-insar-global` + `ciclon-elnino-global`) | `data_global_insar/` (`validar_viabilidad_global.py`, `viabilidad_global_insar.md`) | `frontend_storytelling/` (*Storyboard* animado Local ➔ Global + `sar_concepts`) | `dev/*/jesus_*` |
-| **Samu** (`@smulaboughaba`) | `samu` / `main` | Backend + IA + Vite 3D | Integración completa + **Pipeline Nivel 1 & 2** | `dev/backend/` + `dev/data_science/models/` | `dev/frontend/` (**Vite + MapLibre GL / Deck.gl + GSAP Hyperframes**) | `main` |
+| **Hugo** (`@hviciana`) | `hugo` | **Claude Code (VS Code)** | **Sequía e Incendios Los Ángeles (Ene 2025)** (`incendio-sequia-los-angeles-2025`) | `data_sequia_incendios_la/` (`TAREA_1_COMPATIBILIDAD_DATOS.md`) | `frontend_mapa/` (`TAREA_2_MAPA_EXPLORATORIO.md`) | `dev/data_science/hugo_sequia_incendios_la/` · `dev/frontend/hugo_mapa/` |
+| **Yaro** (`@ItsYarosun`) | `yaro` | **Claude Code (VS Code)** | **El Niño y Ciclón Costero Pacífico** (`ciclon-elnino-global`) | `data_elnino_ciclon/` (`TAREA_1_COMPATIBILIDAD_DATOS.md`) | `frontend_analytics/` (`TAREA_2_DASHBOARD_EXPLORATORIO.md`) | `dev/data_science/yaro_elnino_ciclon/` · `dev/frontend/yaro_analytics/` |
+| **Jesús** (`@jesusorellanagil2002`) | `jesus` | **Gemini Flash 3.8 (Antigravity)** | **DANA de Valencia (Oct–Nov 2024)** (`dana-valencia-2024`) | `data_dana_valencia/` (`TAREA_1_COMPATIBILIDAD_DATOS.md`) | `frontend_storytelling/` (`TAREA_2_STORYTELLING_EXPLORATORIO.md`) | `dev/data_science/jesus_dana_valencia/` · `dev/frontend/jesus_storytelling/` |
+| **Samu** (`@smulaboughaba`) | `samu` / `main` | Backend + Pipeline IA + Vite | Supervisión, Pipeline `T-SAR-JEPA + LightGBM/SHAP`, Terremoto InSAR y Web Tiempo Real | `dev/data_science/models/` + `dev/backend/` | `dev/frontend/` (**Vite + MapLibre/Deck.gl + GSAP**) | `main` |
 
 ---
 
-## 3. Puente Pipeline IA ➔ Web Animada (Los 4 *Hyperframes*)
+## 3. Cómo Trabajar y Subir Vuestros Entregables
 
-Cada archivo `hyperframes_<caso>.json` contiene **4 escenas animadas** que representan el flujo real del modelo (`RES-05` / `RES-06`):
-1. `frame_1_pre` (**`t0_pre` — Línea Base**): territorio estable antes del evento.
-2. `frame_2_event_blindness` (**`t1_event` — Crisis y Ceguera Óptica**): disparo del pico Open Big Data (`cloud_cover_mean` cercano al 95–100% en lluvia/tormenta, humo o epicentro sísmico).
-3. `frame_3_sar_level1` (**`t2_post_sar` — Nivel 1 `T-SAR-JEPA / OPERA`**): barrido radar con escena real de NASA (`browse_url`), caída de backscatter / desplazamiento InSAR y anomalía latente.
-4. `frame_4_fusion_level2_shap` (**Validación — Nivel 2 `LightGBM + SHAP`**): eliminación de falsos positivos y peso causal de cada variable (`shap_attributions`).
-
----
-
-## 4. Importación en `main` (`dev/scripts/sincronizar_equipo.sh`)
-
-```bash
-# Revisar entregas reales y viabilidad de los 3 compañeros desde origin
-./dev/scripts/sincronizar_equipo.sh review
-
-# Importar carpetas a dev/frontend/* y dev/data_science/* para integrar en Vite + FastAPI
-./dev/scripts/sincronizar_equipo.sh import all
-```
+1. En vuestra rama (`hugo`, `yaro` o `jesus`), haced `git pull origin <tu-rama>`.
+2. Empezad siempre por **`TAREA_1_COMPATIBILIDAD_DATOS.md`** (ejecutando el script Python con librería estándar para comprobar que las APIs devuelven datos reales limpios y documentar los hallazgos en `informe_viabilidad_*.md`).
+3. Cuando los datos estén validados, pasad a **`TAREA_2_*`** para visualizar ese mismo dataset en un prototipo limpio.
+4. Subid solo vuestras 2 carpetas:
+   ```bash
+   git add <tu_carpeta_datos> <tu_carpeta_frontend>
+   git commit -m "feat(<tu-rama>): estudio de compatibilidad de datos y visor exploratorio"
+   git push origin <tu-rama>
+   ```
+5. Desde `main`, Samu revisa e importa vuestros estudios sin conflictos ejecutando [`dev/scripts/sincronizar_equipo.sh`](scripts/sincronizar_equipo.sh):
+   ```bash
+   ./dev/scripts/sincronizar_equipo.sh review
+   ./dev/scripts/sincronizar_equipo.sh import all
+   ```

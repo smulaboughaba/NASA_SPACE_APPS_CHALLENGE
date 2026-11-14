@@ -82,9 +82,9 @@ Cada integrante del equipo trabaja en una **rama con raíz aislada** (`hugo`, `y
 | Integrante | Usuario GitHub | Rama asignada | Agente IA y espacio aislado | Responsabilidades transversales |
 | :--- | :--- | :--- | :--- | :--- |
 | **Samu** | `@smulaboughaba` | `samu` / `main` | **Backend (`dev/backend/`) + Motor IA (`dev/data_science/models/`)** | Gobierno de `main`, contratos (`dev/shared/`), sincronización desde ramas aisladas e integración final. |
-| **Hugo** | `@hviciana` | `hugo` | **Claude Code (VS Code)** · raíz `frontend_mapa/` + `data_inundaciones/` | Visor geoespacial Leaflet, comparador SAR, extracción DANA Valencia (`Open-Meteo ERA5`) y análisis inicial con IA. |
-| **Yaro** | `@ItsYarosun` | `yaro` | **Claude Code (VS Code)** · raíz `frontend_analytics/` + `data_incendios_cultivos/` | Gráficas Chart.js (SHAP, uso del suelo, L vs S), extracción `Open-Meteo ERA5`/`FIRMS` y análisis inicial con IA. |
-| **Jesús** | `@jesusorellanagil2002` | `jesus` | **Gemini Flash 3.8 (Antigravity)** · raíz `frontend_storytelling/` + `data_global_insar/` | Narrativa *Local ➔ Global*, tarjetas educativas SAR, pie de atribuciones y extracción sísmica `USGS API` / InSAR. |
+| **Hugo** | `@hviciana` | `hugo` | **Claude Code (VS Code)** · `data_sequia_incendios_la/` + `frontend_mapa/` | Estudio de compatibilidad de datos (EDA) **Sequía e Incendios LA 2025** (`Sentinel-1`, `OPERA RTC/DIST/DISP-S1`, `ERA5`, `CAMS CO/PM2.5`) y visor Leaflet exploratorio. |
+| **Yaro** | `@ItsYarosun` | `yaro` | **Claude Code (VS Code)** · `data_elnino_ciclon/` + `frontend_analytics/` | Estudio de compatibilidad de datos (EDA) **El Niño y Ciclón Pacífico** (`Sentinel-1`, `OPERA`, `ERA5`, índice `ONI`) y dashboard Chart.js exploratorio. |
+| **Jesús** | `@jesusorellanagil2002` | `jesus` | **Gemini Flash 3.8 (Antigravity)** · `data_dana_valencia/` + `frontend_storytelling/` | Estudio de compatibilidad de datos (EDA) **DANA Valencia 2024** (`OPERA DSWx-S1`, `Sentinel-1`, `ERA5` lluvia/nubosidad) y storyboard *Local ➔ Global*. |
 
 ### 4.2. Matriz RACI por bloque de trabajo
 

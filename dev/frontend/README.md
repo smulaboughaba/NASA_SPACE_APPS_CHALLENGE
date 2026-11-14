@@ -18,8 +18,8 @@
 
 ## 2. Reparto de Submódulos
 
-| Subcarpeta en `main` | Origen en rama aislada | Caso asignado y enfoque animado (*4 Hyperframes*) |
+| Subcarpeta en `main` | Origen en rama aislada | Caso asignado y visor exploratorio |
 | :--- | :--- | :--- |
-| `hugo_mapa/` | `origin/hugo:frontend_mapa/` | **DANA Valencia 2024:** mapa geoespacial, `bbox`, vista previa `BROWSE` real de NASA OPERA, cortina Óptico con Nubes vs SAR y paso por los 4 Hyperframes. |
-| `yaro_analytics/` | `origin/yaro:frontend_analytics/` | **Incendio Forestal y Cultivos:** gráficas `Chart.js` animadas que evolucionan del Nivel 1 radar (anomalía + ruido de cultivos) al Nivel 2 (`SHAP` + reducción de falsos positivos). |
-| `jesus_storytelling/` | `origin/jesus:frontend_storytelling/` | **Terremoto InSAR + Ciclón/El Niño Global:** *Storyboard* animado de los 4 Hyperframes mostrando el viaje del dato (`Satélite + Big Data ➔ Nivel 1 ➔ Nivel 2`), transición *Local ➔ Global* y tarjetas `sar_concepts`. |
+| `hugo_mapa/` | `origin/hugo:frontend_mapa/` | **Sequía e Incendios Los Ángeles 2025:** mapa Leaflet, `bbox`, vista previa `Sentinel-1` real, capa sequía/humo/deformación `DISP-S1` y selector temporal de datos compatibles. |
+| `yaro_analytics/` | `origin/yaro:frontend_analytics/` | **El Niño y Ciclón Pacífico:** gráficas `Chart.js` exploratorias de lluvia, viento, cobertura costera afectada y pesos `SHAP` (`L-Band` vs `S-Band`). |
+| `jesus_storytelling/` | `origin/jesus:frontend_storytelling/` | **DANA Valencia 2024 + Viaje Local ➔ Global:** comparador de ceguera óptica por nubes frente a radar `OPERA DSWx-S1`, narrativa guiada y tarjetas educativas `sar_concepts`. |
