@@ -1,38 +1,39 @@
 # Guía Rápida para Jesús (`@jesusorellanagil2002`) — Rama `jesus`
 
-Bienvenido a tu espacio de trabajo limpio. Tu misión es **validar la viabilidad real de nuestros casos globales** (Terremoto InSAR + Ciclón/El Niño cruzando escenas NASA reales + USGS + Open-Meteo sin API key) y construir el **Storyboard Animado de 4 Hyperframes**.
+Bienvenido a tu espacio de trabajo actualizado. Tu caso asignado ahora es: **DANA de Valencia — Inundaciones Súbitas (Oct–Nov 2024)**, además de mantener el hilo narrativo *Local ➔ Global*.
+
+> **Importante:** **NO tienes que programar modelos de IA ni backend.** Lo más importante ahora es **analizar datos reales de la DANA (NASA OPERA/Sentinel-1 + Open-Meteo ERA5)** para verificar que son compatibles y completos antes de que Samu los meta en el modelo.
 
 ---
 
 ## 1. ¿Qué carpetas hay aquí?
-- `datos_compartidos/` *(SOLO LECTURA)*: Contrato JSON común y enlaces/APIs sin clave ya verificados. **No lo toques.**
-- `data_global_insar/` *(TU CARPETA 1 — Empezar aquí)*: `TAREA_2_DATOS.md` descarga sismos reales (`USGS`), clima ciclón (`Open-Meteo`) y pasadas radar (`NASA ASF`), creando **`hyperframes_global_insar.json`** y **`viabilidad_global_insar.md`**.
-- `frontend_storytelling/` *(TU CARPETA 2)*: `TAREA_1_STORYTELLING.md` crea el reproductor **Storyboard Animado de 4 Hyperframes** (*Satélite/Big Data ➔ Nivel 1 IA ➔ Nivel 2 SHAP*), la transición *Local ➔ Global*, las tarjetas `sar_concepts` y los créditos legales.
+- `datos_compartidos/` *(SOLO LECTURA)*: Contrato JSON común y las URLs exactas sin clave para la DANA. **No lo toques.**
+- `data_dana_valencia/` *(TU CARPETA 1 — PRIORIDAD #1)*: Abre `TAREA_1_COMPATIBILIDAD_DATOS.md` y dile a **Gemini Flash 3.8** que haga ese análisis.
+- `frontend_storytelling/` *(TU CARPETA 2 — DESPUÉS DE LOS DATOS)*: Abre `TAREA_2_STORYTELLING_EXPLORATORIO.md` para montar la web narrativa y glosario SAR.
 
-> **Importante:** **NO ejecutes `git merge origin/main`** en esta rama. Trabaja siempre en `jesus` y no modifiques `GEMINI.md`, `LEEME_JESUS.md` ni `datos_compartidos/`.
+> **Aviso Git:** **NO ejecutes `git merge origin/main`** en esta rama. Trabaja siempre en `jesus` y no modifiques `GEMINI.md`, `LEEME_JESUS.md` ni `datos_compartidos/`.
 
 ---
 
 ## 2. Pasos con Gemini Flash 3.8 en Antigravity
-1. Verifica que estás en tu rama:
+1. Asegúrate de estar en tu rama:
    ```bash
    git checkout jesus
    git pull origin jesus
    ```
-2. **Paso 1 (Validar datos reales y Hyperframes):** Abre **`data_global_insar/TAREA_2_DATOS.md`**, copia su prompt y pégalo en Antigravity con **Gemini Flash 3.8**.
-3. **Paso 2 (Storyboard animado):** Copia y pega el prompt de **`frontend_storytelling/TAREA_1_STORYTELLING.md`**.
-4. Pruébalo arrancando un servidor local:
+2. **Paso 1 (Prioridad — Estudio de Compatibilidad de Datos):** Abre `data_dana_valencia/TAREA_1_COMPATIBILIDAD_DATOS.md`, copia su prompt y pégalo en Antigravity con **Gemini Flash 3.8**. Revisa después el informe `data_dana_valencia/informe_viabilidad_dana.md`.
+3. **Paso 2 (Secundario — Storytelling Exploratorio):** Copia y pega el prompt de `frontend_storytelling/TAREA_2_STORYTELLING_EXPLORATORIO.md` y pruébalo con:
    ```bash
    python3 -m http.server 8000
    ```
-   *(Abre `http://localhost:8000/frontend_storytelling/` en tu navegador).*
+   *(Abre `http://localhost:8000/frontend_storytelling/` en el navegador).*
 
 ---
 
 ## 3. Guardar y subir tus cambios sin errores
 ```bash
 git status
-git add data_global_insar frontend_storytelling
-git commit -m "feat(jesus): validar viabilidad global InSAR/El Nino y storyboard 4 hyperframes"
+git add data_dana_valencia frontend_storytelling
+git commit -m "feat(jesus): estudio compatibilidad datos DANA Valencia y storytelling exploratorio"
 git push origin jesus
 ```
