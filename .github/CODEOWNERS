@@ -2,10 +2,32 @@
 * @smulaboughaba
 
 # ==============================================================================
-# Propietarios por carpeta / módulo (completar cuando se definan roles y partes)
-#
-# /ruta/modulo-jesus/   @jesusorellanagil2002 @smulaboughaba
-# /ruta/modulo-yaro/    @ItsYarosun           @smulaboughaba
-# /ruta/modulo-hugo/    @hviciana             @smulaboughaba
-# /ruta/modulo-samu/    @smulaboughaba
+# Propietarios por módulo de trabajo en main (dev/)
 # ==============================================================================
+/dev/backend/                              @smulaboughaba
+/dev/data_science/models/                  @smulaboughaba
+/dev/shared/                               @smulaboughaba
+/dev/scripts/                              @smulaboughaba
+
+/dev/frontend/hugo_mapa/                   @hviciana @smulaboughaba
+/dev/data_science/hugo_inundaciones/       @hviciana @smulaboughaba
+
+/dev/frontend/yaro_analytics/              @ItsYarosun @smulaboughaba
+/dev/data_science/yaro_incendios_cultivos/ @ItsYarosun @smulaboughaba
+
+/dev/frontend/jesus_storytelling/          @jesusorellanagil2002 @smulaboughaba
+/dev/data_science/jesus_global_insar/      @jesusorellanagil2002 @smulaboughaba
+
+# ==============================================================================
+# Propietarios en ramas con raíz aislada (hugo, yaro, jesus)
+# ==============================================================================
+/datos_compartidos/                        @smulaboughaba
+
+/frontend_mapa/                            @hviciana @smulaboughaba
+/data_inundaciones/                        @hviciana @smulaboughaba
+
+/frontend_analytics/                       @ItsYarosun @smulaboughaba
+/data_incendios_cultivos/                  @ItsYarosun @smulaboughaba
+
+/frontend_storytelling/                    @jesusorellanagil2002 @smulaboughaba
+/data_global_insar/                        @jesusorellanagil2002 @smulaboughaba
