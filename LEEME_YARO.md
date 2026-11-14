@@ -1,38 +1,39 @@
 # Guía Rápida para Yaro (`@ItsYarosun`) — Rama `yaro`
 
-Bienvenido a tu espacio de trabajo limpio. Tu misión es **validar la viabilidad real del caso Incendio Forestal y Cultivos** (cruzando satélite NASA Sentinel-1 sin clave + clima ERA5 real) y construir el **panel analítico animado por 4 Hyperframes**.
+Bienvenido a tu espacio de trabajo actualizado. Tu caso asignado ahora es: **El Niño y Ciclón Costero en el Pacífico (`ciclon-elnino-global`)**.
+
+> **Importante:** **NO tienes que programar modelos de IA.** Tu trabajo más importante aquí es **descargar y analizar datos reales de NASA + clima ERA5** para comprobar si son completos y compatibles con el pipeline que luego montará Samu.
 
 ---
 
 ## 1. ¿Qué carpetas hay aquí?
-- `datos_compartidos/` *(SOLO LECTURA)*: Contrato JSON común y endpoints verificados NASA ASF + Open-Meteo ERA5. **No lo edites.**
-- `data_incendios_cultivos/` *(TU CARPETA 1 — Empezar aquí)*: `TAREA_2_DATOS.md` descarga pasadas radar reales + clima ERA5, genera **`hyperframes_incendio_cultivos.json`** y redacta **`viabilidad_incendio_cultivos.md`**.
-- `frontend_analytics/` *(TU CARPETA 2)*: `TAREA_1_ANALYTICS.md` construye el panel dinámico **Chart.js** animado por los **4 Hyperframes** (luego Samu lo integrará en el shell **Vite + MapLibre/Deck.gl + GSAP** de `main`).
+- `datos_compartidos/` *(SOLO LECTURA)*: Contrato JSON y URLs reales sin API key ya preparadas. **No lo edites.**
+- `data_elnino_ciclon/` *(TU CARPETA 1 — PRIORIDAD #1)*: Abre `TAREA_1_COMPATIBILIDAD_DATOS.md` y dile a Claude Code que la ejecute paso a paso.
+- `frontend_analytics/` *(TU CARPETA 2 — DESPUÉS DE LOS DATOS)*: Abre `TAREA_2_DASHBOARD_EXPLORATORIO.md` para visualizar los resultados con Chart.js.
 
-> **Importante:** **NO ejecutes `git merge origin/main`** en esta rama. Trabaja siempre en `yaro` y no modifiques `CLAUDE.md`, `LEEME_YARO.md` ni `datos_compartidos/`.
+> **Aviso Git:** **NO ejecutes `git merge origin/main`** en esta rama. Trabaja siempre en `yaro` y no modifiques `CLAUDE.md`, `LEEME_YARO.md` ni `datos_compartidos/`.
 
 ---
 
-## 2. Orden recomendado con Claude Code (VS Code)
-1. Asegúrate de estar en tu rama:
+## 2. Cómo trabajar con Claude Code en VS Code
+1. Actualiza tu rama local:
    ```bash
    git checkout yaro
    git pull origin yaro
    ```
-2. **Paso 1 (Validar datos reales y Hyperframes):** Abre Claude Code y pega el prompt de **`data_incendios_cultivos/TAREA_2_DATOS.md`**. Esto consultará en vivo NASA ASF + Open-Meteo ERA5, y generará `hyperframes_incendio_cultivos.json` y `viabilidad_incendio_cultivos.md`.
-3. **Paso 2 (Dashboard animado por Hyperframes):** Copia y pega el prompt de **`frontend_analytics/TAREA_1_ANALYTICS.md`**.
-4. Pruébalo en local:
+2. **Paso 1 (Prioridad — Estudio de Compatibilidad de Datos):** En Claude Code, copia y pega el prompt de **`data_elnino_ciclon/TAREA_1_COMPATIBILIDAD_DATOS.md`**. Al terminar, revisa el archivo `data_elnino_ciclon/informe_viabilidad_elnino.md`.
+3. **Paso 2 (Secundario — Dashboard Exploratorio):** Copia y pega el prompt de **`frontend_analytics/TAREA_2_DASHBOARD_EXPLORATORIO.md`** y pruébalo con:
    ```bash
    python3 -m http.server 8000
    ```
-   *(Abre `http://localhost:8000/frontend_analytics/` en tu navegador).*
+   *(Entra en `http://localhost:8000/frontend_analytics/`)*.
 
 ---
 
-## 3. Subir tus cambios sin errores
+## 3. Cómo subir tus avances sin errores
 ```bash
 git status
-git add data_incendios_cultivos frontend_analytics
-git commit -m "feat(yaro): validar viabilidad incendio NASA+ERA5 y analytics animado 4 hyperframes"
+git add data_elnino_ciclon frontend_analytics
+git commit -m "feat(yaro): estudio compatibilidad datos El Nino y dashboard exploratorio"
 git push origin yaro
 ```

@@ -68,13 +68,13 @@ jobs:
                 return 0
                 ;;
               hviciana)
-                [[ "$path" == frontend_mapa/* || "$path" == data_inundaciones/* || "$path" == dev/frontend/hugo_mapa/* || "$path" == dev/data_science/hugo_inundaciones/* ]]
+                [[ "$path" == frontend_mapa/* || "$path" == data_sequia_incendios_la/* || "$path" == data_inundaciones/* || "$path" == dev/frontend/hugo_mapa/* || "$path" == dev/data_science/hugo_sequia_incendios_la/* || "$path" == dev/data_science/hugo_inundaciones/* ]]
                 ;;
               itsyarosun)
-                [[ "$path" == frontend_analytics/* || "$path" == data_incendios_cultivos/* || "$path" == dev/frontend/yaro_analytics/* || "$path" == dev/data_science/yaro_incendios_cultivos/* ]]
+                [[ "$path" == frontend_analytics/* || "$path" == data_elnino_ciclon/* || "$path" == data_incendios_cultivos/* || "$path" == dev/frontend/yaro_analytics/* || "$path" == dev/data_science/yaro_elnino_ciclon/* || "$path" == dev/data_science/yaro_incendios_cultivos/* ]]
                 ;;
               jesusorellanagil2002)
-                [[ "$path" == frontend_storytelling/* || "$path" == data_global_insar/* || "$path" == dev/frontend/jesus_storytelling/* || "$path" == dev/data_science/jesus_global_insar/* ]]
+                [[ "$path" == frontend_storytelling/* || "$path" == data_dana_valencia/* || "$path" == data_global_insar/* || "$path" == dev/frontend/jesus_storytelling/* || "$path" == dev/data_science/jesus_dana_valencia/* || "$path" == dev/data_science/jesus_global_insar/* ]]
                 ;;
               *)
                 return 1

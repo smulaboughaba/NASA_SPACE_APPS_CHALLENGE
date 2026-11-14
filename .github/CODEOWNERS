@@ -10,12 +10,15 @@
 /dev/scripts/                              @smulaboughaba
 
 /dev/frontend/hugo_mapa/                   @hviciana @smulaboughaba
+/dev/data_science/hugo_sequia_incendios_la/ @hviciana @smulaboughaba
 /dev/data_science/hugo_inundaciones/       @hviciana @smulaboughaba
 
 /dev/frontend/yaro_analytics/              @ItsYarosun @smulaboughaba
+/dev/data_science/yaro_elnino_ciclon/      @ItsYarosun @smulaboughaba
 /dev/data_science/yaro_incendios_cultivos/ @ItsYarosun @smulaboughaba
 
 /dev/frontend/jesus_storytelling/          @jesusorellanagil2002 @smulaboughaba
+/dev/data_science/jesus_dana_valencia/     @jesusorellanagil2002 @smulaboughaba
 /dev/data_science/jesus_global_insar/      @jesusorellanagil2002 @smulaboughaba
 
 # ==============================================================================
@@ -24,10 +27,13 @@
 /datos_compartidos/                        @smulaboughaba
 
 /frontend_mapa/                            @hviciana @smulaboughaba
+/data_sequia_incendios_la/                 @hviciana @smulaboughaba
 /data_inundaciones/                        @hviciana @smulaboughaba
 
 /frontend_analytics/                       @ItsYarosun @smulaboughaba
+/data_elnino_ciclon/                       @ItsYarosun @smulaboughaba
 /data_incendios_cultivos/                  @ItsYarosun @smulaboughaba
 
 /frontend_storytelling/                    @jesusorellanagil2002 @smulaboughaba
+/data_dana_valencia/                       @jesusorellanagil2002 @smulaboughaba
 /data_global_insar/                        @jesusorellanagil2002 @smulaboughaba
