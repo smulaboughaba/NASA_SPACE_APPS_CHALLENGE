@@ -1,23 +1,17 @@
 # Módulo Shared (`dev/shared/`)
 
 > **Código:** `DEV-04`  
-> **Responsable:** Samu (`@smulaboughaba`) + Equipo  
-> **Estado:** Pendiente  
+> **Responsable:** Samu (`@smulaboughaba`) + Consumo por Frontend/Backend  
+> **Estado:** En preparación (Contrato v1.0.0 publicado)  
 
 ---
 
 ## Propósito
 
-Mantiene las piezas transversales que conectan `frontend/`, `backend/` y `data_science/` para evitar incompatibilidades durante el desarrollo en paralelo.
+Mantiene los contratos compartidos que conectan `dev/frontend/`, `dev/backend/` y `dev/data_science/` para que los 3 bloques de interfaz y los pipelines de datos avancen en paralelo sin incompatibilidades.
 
-## Contenido previsto
+## Contratos publicados
 
-1. **Contratos de datos / Esquemas JSON**: Definición exacta de las estructuras de entrada y salida entre Frontend, Backend y Data Science.
-2. **Constantes y utilidades comunes**: Coordenadas de referencia, unidades de medida, catálogos compartidos.
-3. **Plantilla de variables de entorno (`.env.example`)**: Lista de variables necesarias (p. ej. `NASA_API_KEY=tu_clave_aqui`) sin incluir jamás valores reales secretos.
-
-## Contratos acordados (completar en Fase 2)
-
-| Contrato | Productor | Consumidor | Descripción |
+| Archivo | Productor | Consumidor | Descripción |
 | :--- | :--- | :--- | :--- |
-| *(Ej. `nasa_events_v1.json`)* | `backend/` | `frontend/` | *(Formato de respuesta de eventos geolocalizados)* |
+| [`mock_events_contract.json`](mock_events_contract.json) | `backend/` / `data_science/` | `frontend/` (`hugo_mapa`, `yaro_analytics`, `jesus_storytelling`) | Esquema v1.0.0 con sucesos reales (`DANA Valencia`, `Incendio`, `Terremoto InSAR`, `Ciclón / El Niño`), métricas SAR, fusión Open Data, valores `SHAP`, conceptos SAR y atribuciones oficiales. |

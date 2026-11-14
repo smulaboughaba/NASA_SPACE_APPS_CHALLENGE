@@ -1,24 +1,23 @@
-# Módulo Data Science (`dev/data_science/`)
+# Módulo Data Science e IA (`dev/data_science/`)
 
 > **Código:** `DEV-03`  
-> **Responsable:** *Por asignar en Fase 2*  
-> **Estado:** Pendiente  
+> **Responsables:** Extracción y análisis inicial: Hugo, Yaro y Jesús · Motor híbrido IA (`models/`): Samu (`@smulaboughaba`)  
+> **Estado:** En preparación  
 
 ---
 
-## Propósito
+## Propósito y Organización
 
-Agrupa los scripts, notebooks y pipelines para descarga, limpieza, transformación y análisis/modelado de los datasets oficiales de la NASA catalogados en [`../../research/02_fuentes_datos_nasa.md`](../../research/02_fuentes_datos_nasa.md).
-
-## Organización recomendada
+Agrupa los scripts, informes y pipelines de extracción de datos SAR/Open Data (según [`../../research/02_fuentes_datos_nasa.md`](../../research/02_fuentes_datos_nasa.md)) y el motor híbrido de IA (según [`../../research/05_formatos_sar_y_arquitectura_modelos_ia.md`](../../research/05_formatos_sar_y_arquitectura_modelos_ia.md)).
 
 ```text
 data_science/
 ├── README.md
-├── notebooks/       # Exploración y validación de datasets NASA
-├── pipelines/       # Scripts reproducibles de ETL / limpieza
-├── models/          # Entrenamiento o inferencia (si aplica)
-└── samples/         # Muestras ligeras de prueba (< 5 MB)
+├── hugo_inundaciones/       # Extracción DANA Valencia (SAR + AEMET/Open-Meteo + DEM) — Hugo (@hviciana)
+├── yaro_incendios_cultivos/ # Extracción Incendios/Cultivos (SAR + NASA FIRMS) — Yaro (@ItsYarosun)
+├── jesus_global_insar/      # Extracción Terremotos InSAR / Glaciares / Global (USGS/CSA) — Jesús (@jesusorellanagil2002)
+├── models/                  # Motor híbrido Nivel 1 SAR + Nivel 2 Big Data SHAP — Samu (@smulaboughaba)
+└── samples/                 # Muestras ligeras JSON/CSV (< 5 MB)
 ```
 
-> **Importante:** No versionar datasets grandes en bruto dentro de Git. Guardar únicamente muestras ligeras de prueba o scripts reproducibles de descarga.
+> **Importante:** Seguir las instrucciones de [`../GUIA_EQUIPO_ANTIGRAVITY.md`](../GUIA_EQUIPO_ANTIGRAVITY.md) y no versionar archivos raster/crudos pesados en Git.

@@ -1,50 +1,75 @@
-# Fuentes de Datos Oficiales NASA y Open Data Complementario
+# Fuentes de Datos Oficiales NASA, Agencias Socias, Análisis del Disclaimer y Triaje Core MVP
 
 > **Código:** `RES-02`  
 > **Fase:** Fase 1 — Investigación, Reto y Datos NASA  
-> **Estado:** En preparación (Base completada)  
+> **Estado:** Completado y filtrado (Core MVP sin fricción)
 
 ---
 
-## 1. Fuentes Primarias Oficiales NASA (SAR / NISAR)
+## 1. Catálogo Oficial de Recursos del Reto (*NASA Space Apps Challenge*)
 
-| ID | Dataset / Plataforma | Qué aporta al proyecto | Formato / Acceso | Estado |
+### 1.1. NASA Data & Resources
+| Recurso oficial | Enlace | Qué aporta al proyecto | Acceso |
+| :--- | :--- | :--- | :--- |
+| **NASA Earthdata Search** | https://search.earthdata.nasa.gov/search | Buscador general de observación terrestre (`OPERA`, `FIRMS`, `SMAP`, `SRTM`). | Login Earthdata |
+| **ASF Data Search Vertex** | https://search.asf.alaska.edu/ | Archivo oficial NASA de datos SAR (**Sentinel-1**, **ALOS PALSAR**, **UAVSAR**, **OPERA RTC/DSWx/DISP/DIST**). | Login gratuito Earthdata |
+| **NISAR Data User Guide** | https://nisar-docs.asf.alaska.edu/ | Guía técnica sobre productos `.h5` (`GCOV`, `GUNW`, `GSLC`) y trabajo con datos NISAR. | Libre sin registro |
+| **Intro to Remote Sensing** | https://www.earthdata.nasa.gov/learn/earth-observation-data-basics/remote-sensing | Fundamentos de teledetección y resoluciones espacial/temporal/espectral. | Libre sin registro |
+| **Intro to Synthetic Aperture Radar (SAR)** | https://www.earthdata.nasa.gov/learn/earth-observation-data-basics/sar | Fundamentos oficiales de frecuencia, longitud de onda, polarización y mecanismos de dispersión. | Libre sin registro |
+| **NASA ARSET Trainings** | https://appliedsciences.nasa.gov/get-involved/training | Cursos prácticos oficiales en **inglés y español** sobre SAR, NISAR, inundaciones y agricultura. | Libre sin registro |
+| **NISAR StoryMaps** | https://nisar.jpl.nasa.gov/applications/arcgis-storymaps/ | StoryMaps interactivos de NASA JPL sobre **inundaciones, incendios, subsidencia, vertidos y glaciares**. | Libre sin registro |
+| **NISAR Applications White Papers** | https://nisar.jpl.nasa.gov/applications/societal-benefit/ | Resúmenes ejecutivos de 2 páginas sobre casos de impacto social de NISAR. | Libre sin registro |
+| **UAVSAR Postcards** | https://uavsar.jpl.nasa.gov/education/postcards.html | Composiciones en falso color aerotransportadas Banda L (`UAVSAR`) para storytelling y validación visual. | Libre sin registro |
+
+### 1.2. Space Agency Partner Resources (Agencias Espaciales Socias)
+| Agencia | Recurso oficial | Enlace | Qué aporta | Acceso |
 | :--- | :--- | :--- | :--- | :--- |
-| `NASA-01` | **NASA ASF DAAC (*Alaska Satellite Facility*)** | Archivo oficial NASA de datos SAR: **ALOS PALSAR** (Banda L, equivalente en longitud de onda a NISAR), **UAVSAR** (aerotransportado Banda L + campañas de simulación NISAR) y **Sentinel-1** (Banda C para series históricas recientes como la DANA). | GeoTIFF / HDF5 / NetCDF · Portal Vertex (`search.asf.alaska.edu`) y librería Python `asf_search` | Pendiente de prueba |
-| `NASA-02` | **Proyecto NASA JPL `OPERA`** *(vía ASF DAAC / Earthdata)* | Productos **Level-3 listos para análisis** (evitan procesar radar crudo desde cero):<br>• `OPERA DSWx`: extensión dinámica de agua superficial (**Inundaciones**).<br>• `OPERA DISP`: desplazamiento superficial InSAR (**Terremotos / Terreno**).<br>• `OPERA DIST`: perturbación superficial (**Incendios / Deforestación**).<br>• `OPERA RTC`: backscatter radiométrica y topográficamente corregido. | Cloud-Optimized GeoTIFF (COG) / NetCDF | Pendiente de prueba |
-| `NASA-03` | **NASA Earthdata / GIBS / Worldview / FIRMS / SMAP** | Visualización en capas WMTS/WMS ([ASF NISAR Worldview Docs](https://nisar-docs.asf.alaska.edu/worldview/)), focos activos térmicos (**FIRMS** para cruzar con incendios) y humedad del suelo (**SMAP** para cruzar con Banda L). | WMTS / WMS / CSV / GeoJSON / HDF5 | Pendiente de prueba |
-| `NASA-04` | **ISRO Bhoonidhi Portal** | Portal oficial socio de la misión conjunta NASA-ISRO para consulta de referencia en **Banda S** y observaciones de agricultura/terreno. | Portal web / API según producto | Referencia |
-
-### Niveles de Producto NISAR en ASF DAAC (Referencia Técnica)
-- **Level 0B:** Señal cruda sin enfocar y calibración.
-- **Level 1:** `RSLC` (*Range-Doppler Single Look Complex*), interferogramas envueltos/desenvueltos y offsets.
-- **Level 2:** `GSLC` (*Geocoded SLC*), interferogramas geocodificados y covarianza polarimétrica *(más prácticos para Web Apps tras conversión a GeoTIFF/COG)*.
-- **Level 3:** Productos geofísicos derivados (humedad del suelo, métricas de deformación).
+| **CSA** *(Canadá)* | **RADARSAT-1 Open Archive** | https://donnees-data.asc-csa.gc.ca/en/dataset/radarsat1 | Archivo histórico SAR bajo *Open Government Licence – Canada*. | Portal CSA |
+| **CSA** *(Canadá)* | **SAR Python Tutorial** | https://github.com/asc-csa/Synthetic_Aperture_Radar_Tutorial | Tutorial oficial en Python y QGIS para visualizar imágenes SAR. | Libre en GitHub |
+| **CSA** *(Canadá)* | **RADARSAT Constellation Mission (RCM)** | https://donnees-data.asc-csa.gc.ca/en/dataset/rcm | Datos de vigilancia marítima, desastres y ecosistemas. | Cuenta EODMS/CSA |
+| **CONAE** *(Argentina)* | **SAOCOM Catalogue** & **Registro ONE CLICK** | [Catálogo](https://catalogos.conae.gov.ar/catalogo/catalogoSatSaocomInfo.html) · [Protocolo Registro](https://www.argentina.gob.ar/noticias/la-informacion-saocom-cada-vez-mas-accesible) | Satélite SAR Banda L (~23.5 cm), documentación en español. | Registro *ONE CLICK* |
 
 ---
 
-## 2. Fuentes Complementarias `Open Data (+)` para Ciencia de Datos (Data Fusion)
+## 2. Triaje Objetivo: ¿Qué necesitamos realmente? (Core MVP vs. Descartadas)
 
-Tal como se planteó en la Pizarra 4, cruzar las detecciones SAR con **Big Data / Open Data de campo** permite pasar de *"ver un cambio en un mapa"* a *"descubrir relaciones causales y cuantificar el impacto real"*:
+> **Criterio objetivo:** Para un hackathon con compañeros que están empezando y tiempo limitado, cada fuente extra con login manual o formatos pesados añade riesgo de bloqueo sin aportar ventaja técnica real frente al catálogo central de NASA ASF/OPERA.
 
-| Dominio / Caso de uso | Fuentes Open Data recomendadas | Relación que descubre la Ciencia de Datos al cruzar con SAR |
-| :--- | :--- | :--- |
-| **Inundaciones / DANA** *(Escala Local)* | • **AEMET OpenData / ERA5 (Copernicus)**: lluvia acumulada por hora/día.<br>• **NASA SRTM / Copernicus DEM**: elevación y pendientes.<br>• **Red hidrográfica / MITECO / OpenStreetMap**: cauces, carreteras y edificios. | Correlacionar milímetros de precipitación + cota topográfica frente a la lámina de agua detectada por `Backscatter` (`OPERA DSWx`) para estimar zonas de acumulación crítica e infraestructura afectada. |
-| **Incendios y Deforestación** | • **NASA FIRMS (MODIS/VIIRS)**: puntos calientes térmicos.<br>• **EFFIS (Copernicus) / AEMET**: viento, temperatura y humedad.<br>• **CORINE Land Cover / ESA WorldCover**: tipo de vegetación previa. | Verificar severidad del daño estructural (caída de retrodispersión volumétrica en Banda L/HV) atravesando el humo y calcular hectáreas quemadas por tipo de masa forestal. |
-| **Terremotos y Cambios de Terreno** | • **USGS Earthquake Catalog API / IGN**: epicentro, profundidad, magnitud y fallas.<br>• **Litología / usos del suelo**: tipo de sustrato. | Cruzar la deformación interferométrica `InSAR` (`OPERA DISP`) con distancia a la falla, magnitud sísmica y tipo de suelo para modelar la atenuación del desplazamiento. |
-| **Cultivos** | • **SIGPAC / LPIS / ESA WorldCover**: parcelas agrícolas y tipos de cultivo.<br>• **NASA SMAP / datos pluviométricos**: humedad y riego. | Relacionar la respuesta en **Banda S / polarización** con ciclos fenológicos de cosecha y estrés hídrico. |
-| **Glaciares** | • **RGI (*Randolph Glacier Inventory*)** + series térmicas **ERA5 / NASA GISTEMP**. | Medir velocidad de desplazamiento o retroceso frontal (`InSAR` / offset tracking) frente a anomalías locales de temperatura. |
-| **Ciclones y El Niño** *(Escala Global)* | • **NOAA / NHC / IBTrACS**: trayectorias y vientos de ciclones.<br>• **NOAA ONI (*Oceanic Niño Index*) / NASA Giovanni**. | Conectar anomalías climáticas planetarias (El Niño / ciclones) con su huella física concreta sobre el terreno (inundaciones costeras, sequías agrícolas o deslizamientos). |
+| Fuente evaluada | Decisión | Motivo técnico y operativo objetivo | Quién la usa |
+| :--- | :--- | :--- | :--- |
+| **NISAR StoryMaps, White Papers, UAVSAR Postcards, Intro to SAR, NASA ARSET** | **MANTENER (Core MVP)** | **Cero registro y cero riesgo.** Material oficial directo de NASA JPL para narrativa, conceptos físicos (Banda L/S, backscatter, InSAR, polarización) y validación visual. | Todo el equipo (Hugo, Yaro, Jesús, Samu) |
+| **ASF Data Search Vertex + NISAR Data User Guide** | **MANTENER (Solo Backend/IA)** | **Único portal SAR técnico necesario.** Centraliza `OPERA` (`.tif` COG ya calibrados: `DSWx`, `DISP`, `DIST`), `Sentinel-1` y `ALOS` Banda L con una sola cuenta Earthdata. | **Solo Samu** (`dev/backend/` + `dev/data_science/models/`) |
+| **Open-Meteo Historical API (ERA5 Copernicus)** (`https://archive-api.open-meteo.com/v1/archive`) | **MANTENER (Core MVP)** | **Sin API Key ni registro.** Devuelve lluvia diaria/horaria, temperatura, viento y humedad en JSON/CSV al instante. **Sustituye a AEMET**. | Hugo (`inundaciones`) e Yaro (`incendios`) |
+| **USGS Earthquake GeoJSON API** (`https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson`) | **MANTENER (Core MVP)** | **Sin API Key ni registro.** GeoJSON oficial en tiempo real e histórico de terremotos (magnitud, profundidad, epicentro). | Jesús (`global_insar`) |
+| **NASA FIRMS Active Fire** (`https://firms.modaps.eosdis.nasa.gov/active_fire/`) | **MANTENER (Core MVP)** | Descarga web directa de CSV históricos de focos térmicos activos sin fricción de autenticación para consultas puntuales. | Yaro (`incendios`) |
+| **CONAE SAOCOM** | **DESCARTADA para MVP** | Exige perfil *ONE CLICK*, gestión adicional y **prohíbe redistribuir crudos**. La Banda L ya queda cubierta sin fricción adicional con `UAVSAR` y `ALOS/OPERA` en `ASF Vertex`. | No usar salvo necesidad posterior |
+| **CSA RCM y RADARSAT-1 (descargas)** | **DESCARTADA para MVP** | Exige cuenta EODMS/portales extra y añade formatos distintos cuando `Sentinel-1` + `OPERA` en `ASF Vertex` cubren todo el flujo. *(Solo se deja `CSA SAR Python Tutorial` en GitHub como referencia opcional de lectura Python).* | No usar para entregas del equipo |
+| **NASA Earthdata Search (portal general)** | **DESCARTADA para compañeros** | Interfaz generalista compleja y propensa a descargar archivos `.h5`/NetCDF de varios GB. Se canaliza únicamente a través de `ASF Vertex` por Samu. | Solo referencia conceptual |
+| **AEMET OpenData (con API Key)** | **DESCARTADA en MVP** | Exige solicitar y gestionar clave personal API. Reemplazada por **Open-Meteo (ERA5 Copernicus)** sin credenciales para el equipo. | No usar en scripts del equipo |
 
 ---
 
-## 3. Política Técnica sobre `Datos Sintéticos (~)`
+## 3. Análisis del Disclaimer Oficial y Reglas Legales
 
-Para proteger el criterio **Validity (Validez científica)** ante el jurado de la NASA:
+El enunciado del reto especifica:
+> *"NASA does not endorse any non-U.S. Government entity and is not responsible for information contained on non-U.S. Government websites. For non-U.S. Government websites, participants must comply with any data use parameters of that specific website."*
 
-1. **Cuándo SÍ usar datos sintéticos/simulados (`~`):**
-   - **Simulaciones oficiales de NISAR publicadas por NASA JPL / ASF DAAC** (generadas a partir de vuelos **UAVSAR** o **ALOS** para entrenar algoritmos antes de la disponibilidad masiva de datos NISAR).
-   - **Escenarios hipotéticos futuros ("¿Qué pasaría si...?")** en la Web App, siempre etiquetados visualmente en la interfaz como *"Simulación / Proyección"* y nunca mezclados sin aviso con observaciones reales.
-   - **Datos sintéticos de prueba unitaria** en `dev/data_science/samples/` durante el desarrollo local.
-2. **Cuándo NO usar datos sintéticos:**
-   - **Nunca sustituir ni falsear** la evidencia de los sucesos históricos reales de la demo (DANA, incendios, terremotos, ciclones): esos deben respaldarse 100% con datos reales de NASA ASF/OPERA/Sentinel-1 y Open Data oficial.
+### Implicaciones prácticas para la Web App y el Repositorio
+1. **Permitido combinar Open Data externo con datos NASA** (`Open-Meteo / ERA5`, `Copernicus`, `USGS`, `OpenStreetMap`), cumpliendo las licencias de atribución de cada sitio.
+2. **Prohibido subir archivos satelitales crudos o pesados a GitHub** (`>5 MB`, `.h5`, `.zip`, `.tif` completos): el repositorio solo almacena **scripts ligeros, métricas agregadas JSON/CSV y documentación derivada**.
+3. **Atribuciones visibles obligatorias:** Tanto en `dev/shared/mock_events_contract.json` como en el pie de página creado por Jesús deben aparecer las fuentes efectivamente empleadas (**NASA ASF DAAC / JPL NISAR & OPERA**, **NASA FIRMS**, **ESA Copernicus / ERA5 vía Open-Meteo**, **NOAA**, **USGS**, **OpenStreetMap contributors**).
+
+---
+
+## 4. Cruces `SAR + Open Data (+)` y Política de `Datos Sintéticos (~)`
+
+### 4.1. Cruces Operativos en el MVP
+| Nicho | Quién extrae Open Data (`+`) | Fuente Keyless MVP | Qué valida junto al SAR (Backend Samu) |
+| :--- | :--- | :--- | :--- |
+| **Inundaciones (DANA Valencia)** | Hugo (`hugo_inundaciones`) | `Open-Meteo ERA5` (`precipitation_sum`) | Lluvia acumulada + pendiente/cota frente a caída de `Backscatter` (`OPERA DSWx`). |
+| **Incendios y Cultivos** | Yaro (`yaro_incendios_cultivos`) | `Open-Meteo ERA5` + `NASA FIRMS` (CSV público) | Temperatura, viento y focos térmicos frente a pérdida cruzada `HV/VH` en Banda L/S. |
+| **Terremotos y Escala Global** | Jesús (`jesus_global_insar`) | `USGS Earthquake API` (`GeoJSON`) | Epicentros/magnitudes frente a interferometría `InSAR` y ancho de barrido global. |
+
+### 4.2. Política sobre `Datos Sintéticos (~)`
+- **Permitido:** Usar `dev/shared/mock_events_contract.json` como contrato de desarrollo para desacoplar Frontend y Backend durante la construcción, y datos simulados oficiales de NASA JPL (`UAVSAR`) etiquetados explícitamente.
+- **Prohibido:** Inventar mediciones reales de desastres históricos en la demo final; los scripts de Hugo, Yaro y Jesús consultan APIs reales abiertas (`Open-Meteo`, `USGS`, `FIRMS`) que se integrarán con el motor de Samu (`RES-05`).

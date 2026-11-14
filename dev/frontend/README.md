@@ -1,23 +1,21 @@
 # Módulo Frontend (`dev/frontend/`)
 
 > **Código:** `DEV-01`  
-> **Responsable:** *Por asignar en Fase 2*  
-> **Estado:** Pendiente  
+> **Responsables:** Hugo (`@hviciana`), Yaro (`@ItsYarosun`) y Jesús (`@jesusorellanagil2002`) · **Integración en `main`:** Samu (`@smulaboughaba`)  
+> **Estado:** En preparación  
 
 ---
 
-## Propósito
+## División de Carpetas (Trabajo Paralelo sin Conflictos)
 
-Alberga la interfaz de usuario de la aplicación, mapas/gráficas interactivas y la conexión con el backend (o visualización directa de salidas procesadas).
+| Subcarpeta | Responsable | Qué construye | Fuente de datos |
+| :--- | :--- | :--- | :--- |
+| `hugo_mapa/` | Hugo (`@hviciana`) | Visor geoespacial interactivo (`Leaflet`), `bbox` y comparador deslizante *Óptico vs SAR* | [`../shared/mock_events_contract.json`](../shared/mock_events_contract.json) |
+| `yaro_analytics/` | Yaro (`@ItsYarosun`) | Panel de Ciencia de Datos (`Chart.js`): atribuciones `SHAP`, uso de suelo y `L-Band vs S-Band` | [`../shared/mock_events_contract.json`](../shared/mock_events_contract.json) |
+| `jesus_storytelling/` | Jesús (`@jesusorellanagil2002`) | Cabecera *Dancing with the SAR's*, línea temporal *Local ➔ Global*, tarjetas educativas y atribuciones legales | [`../shared/mock_events_contract.json`](../shared/mock_events_contract.json) |
 
-## Definición técnica (completar en Fase 2)
-
-- **Framework / Librerías:** *(Ej. React, Next.js, Vite, Tailwind, Leaflet/Cesium/Three.js...)*
-- **Puerto local por defecto:** *(Ej. `http://localhost:5173` o `http://localhost:3000`)*
-- **Dependencia de contratos:** [`../shared/README.md`](../shared/README.md)
+> Para instrucciones paso a paso y prompts listos en Antigravity Flash, consulta [`../GUIA_EQUIPO_ANTIGRAVITY.md`](../GUIA_EQUIPO_ANTIGRAVITY.md).
 
 ## Cómo arrancar en local
 
-```bash
-# Completar cuando se inicialice el stack en Fase 2/3
-```
+Cada submódulo está diseñado para funcionar de forma independiente en navegador (`index.html` o servidor local simple como `python3 -m http.server`) leyendo el contrato JSON compartido [`../shared/mock_events_contract.json`](../shared/mock_events_contract.json).

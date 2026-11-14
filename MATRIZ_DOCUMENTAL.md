@@ -36,10 +36,12 @@ NASA_SPACE_APPS_CHALLENGE/
 │
 ├── dev/                                   # Código fuente organizado por módulos técnicos
 │   ├── README.md                          # Normas de arquitectura y desarrollo en ramas
-│   ├── frontend/                          # [DEV-01] Interfaz de usuario y visualización de datos
-│   ├── backend/                           # [DEV-02] API, lógica de negocio e integración de servicios
-│   ├── data_science/                      # [DEV-03] Procesamiento de datos NASA, análisis y modelos
-│   └── shared/                            # [DEV-04] Contratos de datos, utilidades comunes y .env.example
+│   ├── GUIA_EQUIPO_ANTIGRAVITY.md         # [DEV-00] Guía de ramas aisladas (Claude Code y Gemini Flash 3.8)
+│   ├── scripts/sincronizar_equipo.sh      # Herramienta de revisión e importación desde ramas hugo/yaro/jesus
+│   ├── frontend/                          # [DEV-01] UI modular (hugo_mapa/, yaro_analytics/, jesus_storytelling/)
+│   ├── backend/                           # [DEV-02] API FastAPI e integración (Samu)
+│   ├── data_science/                      # [DEV-03] Extracción (equipo) + Motor IA models/ (Samu)
+│   └── shared/                            # [DEV-04] Contratos JSON (mock_events_contract.json) y .env.example
 │
 ├── anotaciones/                           # Cuadernos vivos de ideación, reuniones y decisiones
 │   ├── README.md
@@ -74,14 +76,14 @@ El trabajo del equipo se divide en **4 fases secuenciales con hitos claros** ant
 
 ### 4.1. Equipo y asignación de ramas
 
-Cada integrante desarrolla en su rama personal y sube sus avances a `main` mediante **Pull Request** revisado por el administrador (`@smulaboughaba`). Los roles técnicos específicos dentro de `dev/` se confirmarán y ajustarán en la **Fase 2** según el reto elegido:
+Cada integrante del equipo trabaja en una **rama con raíz aislada** (`hugo`, `yaro`, `jesus`) pensada para su agente de IA (`Claude Code` en VS Code para Hugo e Yaro; `Gemini Flash 3.8` en Antigravity para Jesús), evitando perderse entre carpetas de `main`. `@smulaboughaba` lidera **Backend + Motor IA** en `samu`/`main`, revisa los avances e importa el código hacia `dev/` mediante [`dev/scripts/sincronizar_equipo.sh`](dev/scripts/sincronizar_equipo.sh):
 
-| Integrante | Usuario GitHub | Rama asignada | Rol / Área principal *(a definir según el reto)* | Responsabilidades transversales |
+| Integrante | Usuario GitHub | Rama asignada | Agente IA y espacio aislado | Responsabilidades transversales |
 | :--- | :--- | :--- | :--- | :--- |
-| **Samu** | `@smulaboughaba` | `samu` | Coordinación / Arquitectura / Integración *(por confirmar módulo técnico)* | Gobierno de `main`, revisión de PRs, control de calidad documental y coordinación de entregables. |
-| **Hugo** | `@hviciana` | `hugo` | *Por asignar (ej. Frontend / Backend / Datos / Diseño)* | Investigación del reto (`research/`), desarrollo de su módulo en `dev/` y registro de avances en `todos/`. |
-| **Yaro** | `@ItsYarosun` | `yaro` | *Por asignar (ej. Frontend / Backend / Datos / Diseño)* | Investigación de datos NASA (`research/`), desarrollo de su módulo en `dev/` y pruebas de integración. |
-| **Jesús** | `@jesusorellanagil2002` | `jesus` | *Por asignar (ej. Frontend / Backend / Datos / Diseño)* | Análisis técnico (`research/`), desarrollo de su módulo en `dev/` y soporte a documentación/pitch. |
+| **Samu** | `@smulaboughaba` | `samu` / `main` | **Backend (`dev/backend/`) + Motor IA (`dev/data_science/models/`)** | Gobierno de `main`, contratos (`dev/shared/`), sincronización desde ramas aisladas e integración final. |
+| **Hugo** | `@hviciana` | `hugo` | **Claude Code (VS Code)** · raíz `frontend_mapa/` + `data_inundaciones/` | Visor geoespacial Leaflet, comparador SAR, extracción DANA Valencia (`Open-Meteo ERA5`) y análisis inicial con IA. |
+| **Yaro** | `@ItsYarosun` | `yaro` | **Claude Code (VS Code)** · raíz `frontend_analytics/` + `data_incendios_cultivos/` | Gráficas Chart.js (SHAP, uso del suelo, L vs S), extracción `Open-Meteo ERA5`/`FIRMS` y análisis inicial con IA. |
+| **Jesús** | `@jesusorellanagil2002` | `jesus` | **Gemini Flash 3.8 (Antigravity)** · raíz `frontend_storytelling/` + `data_global_insar/` | Narrativa *Local ➔ Global*, tarjetas educativas SAR, pie de atribuciones y extracción sísmica `USGS API` / InSAR. |
 
 ### 4.2. Matriz RACI por bloque de trabajo
 
@@ -93,9 +95,10 @@ Leyenda: **R** = Responsable de ejecutar · **A** = Aprobador final · **C** = C
 | **Investigación del reto y datos NASA (`research/`)** | **A** | **R** | **R** | **R** |
 | **Ideación, actas y decisiones (`anotaciones/`)** | **A / R** | **C / R** | **C / R** | **C / R** |
 | **Arquitectura y contratos (`dev/shared/`)** | **A / R** | **C** | **C** | **C** |
-| **Desarrollo Frontend (`dev/frontend/`)** | **A** | **C / R** *(por asignar)* | **C / R** *(por asignar)* | **C / R** *(por asignar)* |
-| **Desarrollo Backend (`dev/backend/`)** | **A** | **C / R** *(por asignar)* | **C / R** *(por asignar)* | **C / R** *(por asignar)* |
-| **Datos y Ciencia NASA (`dev/data_science/`)** | **A** | **C / R** *(por asignar)* | **C / R** *(por asignar)* | **C / R** *(por asignar)* |
+| **Desarrollo Frontend (`dev/frontend/`)** | **A** *(integra en `main`)* | **R** *(Mapa)* | **R** *(Analytics)* | **R** *(Storytelling)* |
+| **Desarrollo Backend (`dev/backend/`)** | **A / R** | I | I | I |
+| **Extracción de Datos (`dev/data_science/<persona>/`)** | **A** | **R** *(Inundaciones)* | **R** *(Incendios/Cultivos)* | **R** *(InSAR/Global)* |
+| **Motor Híbrido IA (`dev/data_science/models/`)** | **A / R** | **C** | **C** | **C** |
 | **Seguimiento de To-Dos (`todos/`)** | **A / R** | **R** | **R** | **R** |
 | **Testing final, Pitch y Entrega NASA** | **A / R** | **R** | **R** | **R** |
 
@@ -111,10 +114,11 @@ Leyenda: **R** = Responsable de ejecutar · **A** = Aprobador final · **C** = C
 | `RES-03` | Estado del Arte y Solución Propuesta | [`research/03_estado_del_arte_y_solucion.md`](research/03_estado_del_arte_y_solucion.md) | Fase 1 | Todo el equipo | En preparación (Base completada) |
 | `RES-04` | Plan de Research y Evidencias de Fusión | [`research/04_plan_de_research_y_evidencias_fusion.md`](research/04_plan_de_research_y_evidencias_fusion.md) | Fase 1 | Todo el equipo | En preparación (Base completada) |
 | `RES-05` | Formatos SAR y Modelos IA + Big Data | [`research/05_formatos_sar_y_arquitectura_modelos_ia.md`](research/05_formatos_sar_y_arquitectura_modelos_ia.md) | Fase 1–2 | Todo el equipo | En preparación (Base completada) |
-| `DEV-01` | Módulo Frontend | [`dev/frontend/README.md`](dev/frontend/README.md) | Fase 2–3 | *Por asignar* | Pendiente |
-| `DEV-02` | Módulo Backend | [`dev/backend/README.md`](dev/backend/README.md) | Fase 2–3 | *Por asignar* | Pendiente |
-| `DEV-03` | Módulo Data Science | [`dev/data_science/README.md`](dev/data_science/README.md) | Fase 2–3 | *Por asignar* | Pendiente |
-| `DEV-04` | Módulo Shared (Contratos y Config) | [`dev/shared/README.md`](dev/shared/README.md) | Fase 2–3 | Samu + Equipo | Pendiente |
+| `DEV-00` | Guía Autónoma del Equipo (Claude Code y Flash 3.8) | [`dev/GUIA_EQUIPO_ANTIGRAVITY.md`](dev/GUIA_EQUIPO_ANTIGRAVITY.md) | Fase 1–3 | Hugo, Yaro, Jesús | Aprobado (Base lista) |
+| `DEV-01` | Módulo Frontend Modular | [`dev/frontend/README.md`](dev/frontend/README.md) | Fase 2–3 | Hugo, Yaro, Jesús | En preparación |
+| `DEV-02` | Módulo Backend | [`dev/backend/README.md`](dev/backend/README.md) | Fase 2–3 | Samu (`@smulaboughaba`) | Pendiente |
+| `DEV-03` | Módulo Data Science e IA | [`dev/data_science/README.md`](dev/data_science/README.md) | Fase 2–3 | Equipo (extracción) + Samu (IA) | En preparación |
+| `DEV-04` | Módulo Shared (Contratos y Config) | [`dev/shared/README.md`](dev/shared/README.md) · [`mock_events_contract.json`](dev/shared/mock_events_contract.json) | Fase 2–3 | Samu + Consumo Equipo | En preparación (v1.0.0) |
 | `ANO-01` | Brainstorming e Ideas | [`anotaciones/01_brainstorming_ideas.md`](anotaciones/01_brainstorming_ideas.md) | Fase 1 | Todo el equipo | En preparación (Base completada) |
 | `ANO-02` | Bitácora de Reuniones | [`anotaciones/02_bitacora_reuniones.md`](anotaciones/02_bitacora_reuniones.md) | Transversal | Rotativo / Samu | Pendiente |
 | `ANO-03` | Decisiones de Arquitectura (ADR) | [`anotaciones/03_decisiones_arquitectura.md`](anotaciones/03_decisiones_arquitectura.md) | Fase 2–3 | Samu + Equipo | En preparación |
