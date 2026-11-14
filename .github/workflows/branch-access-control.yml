@@ -1,4 +1,4 @@
-name: Control de Acceso por Rama
+name: Control de Acceso por Rama y Carpeta
 
 on:
   push:
@@ -16,8 +16,8 @@ permissions:
   contents: write
 
 jobs:
-  verify-branch-owner:
-    name: Verificar permisos de usuario sobre la rama
+  verify-branch-and-path-owner:
+    name: Verificar permisos de usuario sobre rama y carpetas
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -26,9 +26,13 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
-      - name: Verificar permisos de usuario sobre la rama
+      - name: Verificar permisos por usuario, rama y carpeta
         env:
           BEFORE_SHA: ${{ github.event.before }}
+          CURRENT_SHA: ${{ github.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_REF: ${{ github.head_ref }}
         run: |
           set -euo pipefail
 
@@ -56,29 +60,192 @@ jobs:
             esac
           }
 
+          is_path_allowed() {
+            local actor="$1"
+            local path="$2"
+            case "$actor" in
+              smulaboughaba)
+                return 0
+                ;;
+              hviciana)
+                [[ "$path" == frontend_mapa/* || "$path" == data_inundaciones/* || "$path" == dev/frontend/hugo_mapa/* || "$path" == dev/data_science/hugo_inundaciones/* ]]
+                ;;
+              itsyarosun)
+                [[ "$path" == frontend_analytics/* || "$path" == data_incendios_cultivos/* || "$path" == dev/frontend/yaro_analytics/* || "$path" == dev/data_science/yaro_incendios_cultivos/* ]]
+                ;;
+              jesusorellanagil2002)
+                [[ "$path" == frontend_storytelling/* || "$path" == data_global_insar/* || "$path" == dev/frontend/jesus_storytelling/* || "$path" == dev/data_science/jesus_global_insar/* ]]
+                ;;
+              *)
+                return 1
+                ;;
+            esac
+          }
+
+          file_matches_main_parent() {
+            local commit="$1"
+            local path="$2"
+            shift 2
+            local p c_entry p_entry
+            c_entry="$(git ls-tree "$commit" -- "$path" || true)"
+            for p in "$@"; do
+              if git merge-base --is-ancestor "$p" origin/main 2>/dev/null; then
+                p_entry="$(git ls-tree "$p" -- "$path" || true)"
+                if [[ "$c_entry" == "$p_entry" ]]; then
+                  return 0
+                fi
+              fi
+            done
+            return 1
+          }
+
+          revert_push() {
+            local branch="$1"
+            if [[ -n "${BEFORE_SHA}" && "${BEFORE_SHA}" != "0000000000000000000000000000000000000000" ]]; then
+              git cat-file -e "${BEFORE_SHA}^{commit}" 2>/dev/null || git fetch --quiet origin "${BEFORE_SHA}" 2>/dev/null || true
+              if git cat-file -e "${BEFORE_SHA}^{commit}" 2>/dev/null; then
+                echo "Revirtiendo automáticamente la rama '${branch}' al commit anterior (${BEFORE_SHA})..."
+                git push --force origin "${BEFORE_SHA}:refs/heads/${branch}"
+                echo "Rama '${branch}' restaurada a ${BEFORE_SHA}."
+              else
+                echo "::warning::No se pudo localizar ${BEFORE_SHA} localmente para revertir la rama '${branch}'."
+              fi
+            fi
+          }
+
           if [[ "${GITHUB_EVENT_NAME}" == "push" ]]; then
             BRANCH="${GITHUB_REF_NAME}"
-            if is_authorized "$BRANCH" "$ACTOR"; then
-              echo "Push autorizado: @${GITHUB_ACTOR} tiene permisos en la rama '${BRANCH}'."
-              exit 0
+
+            if ! is_authorized "$BRANCH" "$ACTOR"; then
+              echo "::error::Acceso denegado: @${GITHUB_ACTOR} no tiene permiso para hacer push en la rama '${BRANCH}'."
+              revert_push "$BRANCH"
+              exit 1
             fi
 
-            echo "::error::Acceso denegado: @${GITHUB_ACTOR} no tiene permiso para hacer push en la rama '${BRANCH}'."
+            if [[ "$ACTOR" == "smulaboughaba" ]]; then
+              echo "Push autorizado: @${GITHUB_ACTOR} (administrador) tiene acceso total en '${BRANCH}'."
+              exit 0
+            fi
 
             if [[ -n "${BEFORE_SHA}" && "${BEFORE_SHA}" != "0000000000000000000000000000000000000000" ]]; then
-              echo "Revirtiendo automáticamente la rama '${BRANCH}' al commit anterior (${BEFORE_SHA})..."
-              git push --force origin "${BEFORE_SHA}:refs/heads/${BRANCH}"
-              echo "Rama '${BRANCH}' restaurada a ${BEFORE_SHA}."
+              git cat-file -e "${BEFORE_SHA}^{commit}" 2>/dev/null || git fetch --quiet origin "${BEFORE_SHA}" 2>/dev/null || true
+              if ! git merge-base --is-ancestor "${BEFORE_SHA}" "${CURRENT_SHA}" 2>/dev/null; then
+                echo "::error::Force-push bloqueado: @${GITHUB_ACTOR} no puede reescribir el historial de '${BRANCH}'."
+                revert_push "$BRANCH"
+                exit 1
+              fi
             fi
 
-            exit 1
+            git fetch --quiet origin main || true
+            HAS_ORIGIN_MAIN=0
+            if git rev-parse --verify origin/main >/dev/null 2>&1; then
+              HAS_ORIGIN_MAIN=1
+            fi
+
+            SETUP_SHA="$(git log --grep='\[branch-root-setup\]' -n 1 --format=%H "${CURRENT_SHA}" || true)"
+
+            if [[ -n "${BEFORE_SHA}" && "${BEFORE_SHA}" != "0000000000000000000000000000000000000000" ]] && git cat-file -e "${BEFORE_SHA}^{commit}" 2>/dev/null; then
+              if [[ "$HAS_ORIGIN_MAIN" -eq 1 ]]; then
+                COMMITS="$(git rev-list "${BEFORE_SHA}..${CURRENT_SHA}" --not origin/main)"
+              else
+                COMMITS="$(git rev-list "${BEFORE_SHA}..${CURRENT_SHA}")"
+              fi
+            elif [[ -n "${SETUP_SHA}" ]]; then
+              if [[ "$HAS_ORIGIN_MAIN" -eq 1 ]]; then
+                COMMITS="$(git rev-list "${SETUP_SHA}..${CURRENT_SHA}" --not origin/main)"
+              else
+                COMMITS="$(git rev-list "${SETUP_SHA}..${CURRENT_SHA}")"
+              fi
+            else
+              if [[ "$HAS_ORIGIN_MAIN" -eq 1 ]]; then
+                COMMITS="$(git rev-list "${CURRENT_SHA}" --not origin/main)"
+              else
+                COMMITS="$(git rev-list "${CURRENT_SHA}")"
+              fi
+            fi
+
+            VIOLATIONS=()
+            for c in $COMMITS; do
+              if git log -n 1 --format=%B "$c" | grep -q '\[branch-root-setup\]'; then
+                continue
+              fi
+
+              parents_str="$(git show -s --format=%P "$c")"
+              read -r -a PARENTS <<< "$parents_str"
+
+              if [[ ${#PARENTS[@]} -eq 0 ]]; then
+                CHANGED_FILES="$(git -c core.quotepath=false diff-tree --no-commit-id --name-only -r --root "$c")"
+              elif [[ ${#PARENTS[@]} -eq 1 ]]; then
+                CHANGED_FILES="$(git -c core.quotepath=false diff-tree --no-commit-id --name-only -r "$c")"
+              else
+                CHANGED_FILES="$(git -c core.quotepath=false diff --name-only "${PARENTS[0]}" "$c")"
+              fi
+
+              while IFS= read -r path; do
+                [[ -z "$path" ]] && continue
+                if is_path_allowed "$ACTOR" "$path"; then
+                  continue
+                fi
+                if [[ ${#PARENTS[@]} -ge 2 && "$HAS_ORIGIN_MAIN" -eq 1 ]] && file_matches_main_parent "$c" "$path" "${PARENTS[@]:1}"; then
+                  continue
+                fi
+                VIOLATIONS+=("$path (en commit ${c:0:7})")
+              done <<< "$CHANGED_FILES"
+            done
+
+            if [[ ${#VIOLATIONS[@]} -gt 0 ]]; then
+              echo "::error::Acceso denegado por carpeta: @${GITHUB_ACTOR} solo puede modificar sus carpetas asignadas."
+              for v in "${VIOLATIONS[@]}"; do
+                echo "::error::Archivo no permitido: ${v}"
+              done
+              revert_push "$BRANCH"
+              exit 1
+            fi
+
+            echo "Push autorizado: @${GITHUB_ACTOR} modificó únicamente sus carpetas permitidas en '${BRANCH}'."
+            exit 0
+
           elif [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
-            BRANCH="${GITHUB_HEAD_REF}"
-            if is_authorized "$BRANCH" "$ACTOR"; then
-              echo "Pull Request autorizado: @${GITHUB_ACTOR} puede abrir PR desde '${BRANCH}'."
+            BRANCH="${HEAD_REF}"
+            BASE_BRANCH="${BASE_REF:-main}"
+            TARGET_SHA="${PR_HEAD_SHA:-$CURRENT_SHA}"
+
+            if ! is_authorized "$BRANCH" "$ACTOR"; then
+              echo "::error::Acceso denegado: @${GITHUB_ACTOR} no tiene permiso para abrir un Pull Request desde '${BRANCH}'."
+              exit 1
+            fi
+
+            if [[ "$ACTOR" == "smulaboughaba" ]]; then
+              echo "Pull Request autorizado: @${GITHUB_ACTOR} (administrador) puede abrir PR desde '${BRANCH}'."
               exit 0
             fi
 
-            echo "::error::Acceso denegado: @${GITHUB_ACTOR} no tiene permiso para abrir un Pull Request desde la rama '${BRANCH}'."
-            exit 1
+            git fetch --quiet origin "${BASE_BRANCH}" || true
+            git cat-file -e "${TARGET_SHA}^{commit}" 2>/dev/null || git fetch --quiet origin "${TARGET_SHA}" 2>/dev/null || true
+
+            SETUP_SHA="$(git log --grep='\[branch-root-setup\]' -n 1 --format=%H "${TARGET_SHA}" || true)"
+            if [[ -n "${SETUP_SHA}" ]]; then
+              CHANGED_FILES="$(git -c core.quotepath=false diff --name-only "${SETUP_SHA}..${TARGET_SHA}")"
+            else
+              CHANGED_FILES="$(git -c core.quotepath=false diff --name-only "origin/${BASE_BRANCH}...${TARGET_SHA}")"
+            fi
+
+            VIOLATIONS=()
+            while IFS= read -r path; do
+              [[ -z "$path" ]] && continue
+              if ! is_path_allowed "$ACTOR" "$path"; then
+                VIOLATIONS+=("$path")
+              fi
+            done <<< "$CHANGED_FILES"
+
+            if [[ ${#VIOLATIONS[@]} -gt 0 ]]; then
+              echo "::error::Pull Request bloqueado: @${GITHUB_ACTOR} modificó archivos fuera de sus carpetas asignadas."
+              for v in "${VIOLATIONS[@]}"; do
+                echo "::error::Archivo no permitido en PR: ${v}"
+              done
+              exit 1
+            fi
+
+            echo "Pull Request autorizado: @${GITHUB_ACTOR} modificó únicamente sus carpetas permitidas desde '${BRANCH}'."
+            exit 0
           fi
