@@ -1,19 +1,22 @@
-# Tarea 1 — Panel Analítico Open Data + SHAP (`frontend_analytics/`)
+# Tarea 2 de Visualización — Analytics Animado por Hyperframes (`frontend_analytics/`)
 
 ## Objetivo
-Construir un dashboard interactivo con **Chart.js** que lea `datos_compartidos/mock_events_contract.json` y muestre métricas de impacto, explicabilidad IA (`shap_attributions`), usos del suelo afectados (`affected_land_cover_ha`) y comparativa física **L-Band vs S-Band**.
+Construir un panel analítico en **Chart.js** que evolucione visualmente paso a paso a través de los **4 Hyperframes** de `data_incendios_cultivos/hyperframes_incendio_cultivos.json`: mostrando cómo en el Nivel 1 el radar tiene ruido con cultivos, y en el Nivel 2 la fusión **`LightGBM + SHAP`** depura la causa real.
 
 ---
 
 ## Prompt listo para copiar y pegar en Claude Code
 ```text
-Lee CLAUDE.md, datos_compartidos/mock_events_contract.json y datos_compartidos/FUENTES_Y_CONTEXTO_YARO.md.
+Lee CLAUDE.md, datos_compartidos/mock_events_contract.json, datos_compartidos/FUENTES_Y_CONTEXTO_YARO.md y data_incendios_cultivos/hyperframes_incendio_cultivos.json (si existe).
 Trabaja ÚNICAMENTE dentro de la carpeta frontend_analytics/ (no modifiques ningún archivo fuera de ella).
 
-Crea allí un dashboard analítico web (index.html, styles.css, app.js) con diseño oscuro científico usando Chart.js desde CDN:
-1. Selector superior para cambiar entre los 4 eventos de mock_events_contract.json (incendio-forestal-mediterraneo seleccionado por defecto).
-2. 4 tarjetas KPI arriba mostrando: área afectada (sar_signature.affected_area_km2 en km²), Score de anomalía latente JEPA (sar_signature.jepa_latent_anomaly_score), Reducción de falsos positivos frente a solo SAR (sar_signature.false_positive_reduction_pct %), y banda/polarización activa (sar_signature.band + polarization).
-3. Gráfica 1 (Barras horizontales Chart.js): "Explicabilidad IA — Peso de Variables SAR vs Open Data", leyendo shap_attributions (eje Y: feature, eje X: contribution_pct %).
-4. Gráfica 2 (Donut o barras apiladas Chart.js): "Hectáreas afectadas por cobertura del suelo", leyendo dinamicamente el objeto open_data_metrics.affected_land_cover_ha, más una tabla con el resto de open_data_metrics del evento.
-5. Tarjeta comparativa fija abajo explicando L-Band (24 cm, penetración en bosque/incendios) vs S-Band (9.4 cm, sensibilidad en cultivos/superficie) y sección de créditos leyendo event.attributions. Carga el JSON mediante fetch('../datos_compartidos/mock_events_contract.json').
+Crea en frontend_analytics/ un dashboard analítico oscuro de ciencia de datos (index.html, styles.css, app.js) usando Chart.js desde CDN:
+1. Carga ../data_incendios_cultivos/hyperframes_incendio_cultivos.json y ../datos_compartidos/mock_events_contract.json vía fetch (incluye fallback en JS por si hyperframes_incendio_cultivos.json aún no existe).
+2. Selector superior del evento activo (incendio-forestal-mediterraneo por defecto) + barra interactiva de los 4 Hyperframes con botones Play / Pausa (transición animada cada 3.5s) y pasos 1 -> 2 -> 3 -> 4:
+   - Al cambiar de Hyperframe, actualiza con animación suave de Chart.js:
+     a) Gráfica de Barras Horizontales (active_shap del Hyperframe activo, viendo cómo pasa de señal bruta con falsos positivos en cultivos en Nivel 1 a las contribuciones causales exactas shap_attributions en Nivel 2).
+     b) Gráfica Donut de hectáreas por cobertura del suelo (open_data_metrics.affected_land_cover_ha) y comparación visual de falsos positivos eliminados (-28.5% / false_positive_reduction_pct).
+     c) Tarjetas KPI vivas con temperatura, humedad, viento, anomaly_score y vista previa de sar_browse_url de Sentinel-1 cuando esté disponible en el frame.
+3. Bloque fijo comparando Banda L (24 cm, bosques e incendios) vs Banda S (9.4 cm, hojas y cultivos) y pie legal con attributions del JSON.
+4. Organiza app.js en funciones limpias exportables para facilitar su integración futura en Vite + MapLibre/Deck.gl + GSAP.
 ```
