@@ -32,7 +32,8 @@ NASA_SPACE_APPS_CHALLENGE/
 │   ├── 02_fuentes_datos_nasa.md           # [RES-02] Catálogo de APIs, datasets y misiones NASA
 │   ├── 03_estado_del_arte_y_solucion.md   # [RES-03] Soluciones existentes, propuesta de valor e impacto
 │   ├── 04_plan_de_research_y_evidencias_fusion.md # [RES-04] Plan de research y evidencias de fusión SAR + Open Data
-│   └── 05_formatos_sar_y_arquitectura_modelos_ia.md # [RES-05] Formatos SAR (HDF5/COG) y evaluación de modelos IA + Big Data
+│   ├── 05_formatos_sar_y_arquitectura_modelos_ia.md # [RES-05] Formatos SAR (HDF5/COG) y evaluación de modelos IA + Big Data
+│   └── 06_viabilidad_casos_storytelling_y_animacion_web.md # [RES-06] Viabilidad SAR+OpenData verificada y 4 Hyperframes IA ➔ Web
 │
 ├── dev/                                   # Código fuente organizado por módulos técnicos
 │   ├── README.md                          # Normas de arquitectura y desarrollo en ramas
@@ -114,6 +115,7 @@ Leyenda: **R** = Responsable de ejecutar · **A** = Aprobador final · **C** = C
 | `RES-03` | Estado del Arte y Solución Propuesta | [`research/03_estado_del_arte_y_solucion.md`](research/03_estado_del_arte_y_solucion.md) | Fase 1 | Todo el equipo | En preparación (Base completada) |
 | `RES-04` | Plan de Research y Evidencias de Fusión | [`research/04_plan_de_research_y_evidencias_fusion.md`](research/04_plan_de_research_y_evidencias_fusion.md) | Fase 1 | Todo el equipo | En preparación (Base completada) |
 | `RES-05` | Formatos SAR y Modelos IA + Big Data | [`research/05_formatos_sar_y_arquitectura_modelos_ia.md`](research/05_formatos_sar_y_arquitectura_modelos_ia.md) | Fase 1–2 | Todo el equipo | En preparación (Base completada) |
+| `RES-06` | Viabilidad de Casos y Animación Hyperframes | [`research/06_viabilidad_casos_storytelling_y_animacion_web.md`](research/06_viabilidad_casos_storytelling_y_animacion_web.md) | Fase 1–2 | Todo el equipo | Aprobado (APIs NASA verificadas) |
 | `DEV-00` | Guía Autónoma del Equipo (Claude Code y Flash 3.8) | [`dev/GUIA_EQUIPO_ANTIGRAVITY.md`](dev/GUIA_EQUIPO_ANTIGRAVITY.md) | Fase 1–3 | Hugo, Yaro, Jesús | Aprobado (Base lista) |
 | `DEV-01` | Módulo Frontend Modular | [`dev/frontend/README.md`](dev/frontend/README.md) | Fase 2–3 | Hugo, Yaro, Jesús | En preparación |
 | `DEV-02` | Módulo Backend | [`dev/backend/README.md`](dev/backend/README.md) | Fase 2–3 | Samu (`@smulaboughaba`) | Pendiente |

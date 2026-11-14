@@ -1,66 +1,49 @@
-# Guía Autónoma del Equipo (Ramas Aisladas para Claude Code y Gemini Flash 3.8)
+# Guía Autónoma del Equipo (Validación Satélite SAR + Open Data y Hyperframes)
 
 > **Código:** `DEV-00`  
+> **Arquitectura vinculada:** `ADR-003` (**Vite + MapLibre GL / Deck.gl + GSAP Hyperframes** en `main`) y `RES-06`  
 > **Para:** Hugo (`@hviciana`), Yaro (`@ItsYarosun`) y Jesús (`@jesusorellanagil2002`)  
-> **Coordinación Backend + IA + Revisión e Integración:** Samu (`@smulaboughaba`)
+> **Coordinación Backend + IA + Shell Vite:** Samu (`@smulaboughaba`)
 
 ---
 
-## 1. Arquitectura de Raíz Aislada por Rama (Cero Confusiones)
+## 1. Objetivo Central de Vuestras Ramas Aisladas
 
-Para que ni vosotros ni vuestros agentes de IA os perdáis entre decenas de archivos de investigación y backend, **las ramas `hugo`, `yaro` y `jesus` tienen una distribución de carpetas propia y reducida en la raíz** (distinta de `main`):
+Cada uno valida de extremo a extremo **1 caso de storytelling real** para confirmar que los datos de satélite **NASA SAR** (consultados en APIs públicas sin clave: **NASA CMR** y **NASA ASF GeoJSON**) y los datos **Open Big Data** (`Open-Meteo ERA5` con nubosidad `cloud_cover_mean`, `USGS Earthquake API`, `NASA FIRMS`) coinciden temporal y físicamente, generan una secuencia animada de **4 Hyperframes (`hyperframes_<caso>.json`)** y alimentan la Web App final en **Vite + MapLibre GL/Deck.gl + GSAP** que ensamblará Samu.
 
-- **NO tenéis `research/`, `todos/`, `anotaciones/`, `dev/backend/` ni `README.md` en vuestra rama.**
-- **NO hagáis `git merge origin/main` desde vuestras ramas**, porque `main` usa la estructura completa del proyecto y chocaría con vuestra raíz limpia.
-- Todo lo que necesitáis de contexto NASA, fuentes Open Data y el contrato JSON está pre-empaquetado dentro de **`datos_compartidos/`** en la raíz de vuestra rama.
-
-### Regla de seguridad automática (GitHub Actions + `CODEOWNERS`)
-1. Cada uno solo puede hacer `push` a **su propia rama** (`hugo`, `yaro` o `jesus`).
-2. Solo podéis modificar archivos dentro de **vuestras 2 carpetas de trabajo**. Si un commit modifica `CLAUDE.md`, `GEMINI.md`, `datos_compartidos/`, `.github/` o intenta un `git push --force`, [branch-access-control.yml](../.github/workflows/branch-access-control.yml) bloquea el cambio y revierte la rama al estado previo.
+> **Regla de seguridad automática (`.github/workflows/branch-access-control.yml`):**
+> - **NO ejecutéis `git merge origin/main`** en vuestras ramas aisladas (`hugo`, `yaro`, `jesus`).
+> - Solo podéis modificar archivos dentro de **vuestras 2 carpetas de trabajo**. Todo lo de `datos_compartidos/`, `CLAUDE.md`, `GEMINI.md`, `LEEME_*.md` y `.github/` es de solo lectura.
 
 ---
 
-## 2. Reparto Exacto: Agente IA, Rama y Carpetas Raíz
+## 2. Reparto Exacto: Rama, Agente IA, Caso y Entregables
 
-| Integrante | Rama Git | Agente IA usado | Archivos guía en la raíz de su rama | Sus 2 únicas carpetas editables | Destino en `main` (Samu) |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Hugo** (`@hviciana`) | `hugo` | **Claude Code (VS Code)** | `CLAUDE.md`, `LEEME_HUGO.md`, `datos_compartidos/FUENTES_Y_CONTEXTO_HUGO.md` | `frontend_mapa/` · `data_inundaciones/` | `dev/frontend/hugo_mapa/` · `dev/data_science/hugo_inundaciones/` |
-| **Yaro** (`@ItsYarosun`) | `yaro` | **Claude Code (VS Code)** | `CLAUDE.md`, `LEEME_YARO.md`, `datos_compartidos/FUENTES_Y_CONTEXTO_YARO.md` | `frontend_analytics/` · `data_incendios_cultivos/` | `dev/frontend/yaro_analytics/` · `dev/data_science/yaro_incendios_cultivos/` |
-| **Jesús** (`@jesusorellanagil2002`) | `jesus` | **Gemini Flash 3.8 (Antigravity)** | `GEMINI.md`, `LEEME_JESUS.md`, `datos_compartidos/FUENTES_Y_CONTEXTO_JESUS.md` | `frontend_storytelling/` · `data_global_insar/` | `dev/frontend/jesus_storytelling/` · `dev/data_science/jesus_global_insar/` |
-| **Samu** (`@smulaboughaba`) | `samu` / `main` | Coordinador Backend + IA | `MATRIZ_DOCUMENTAL.md`, `research/`, `dev/` completo | `dev/backend/` · `dev/data_science/models/` · `dev/shared/` | Integración completa en `main` |
-
-> **Fuentes descartadas en las ramas del equipo (`CONAE SAOCOM`, `CSA RCM/RADARSAT-1`, `Earthdata Search`, `AEMET con token`):** Se mantienen fuera del flujo del equipo para evitar registros y descargas pesadas. Hugo, Yaro y Jesús usan únicamente APIs sin API key (`Open-Meteo ERA5`, `USGS Earthquake API`, `NASA FIRMS` CSV web) y material NASA abierto (`NISAR StoryMaps`, `UAVSAR Postcards`, `Intro to SAR`, `NASA ARSET`).
+| Integrante | Rama Git | Agente IA | Caso asignado (`mock_events_contract.json`) | Carpeta Datos + Viabilidad (`hyperframes_*.json`) | Carpeta UI Animada (*4 Hyperframes*) | Destino en `main` |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Hugo** (`@hviciana`) | `hugo` | **Claude Code (VS Code)** | **DANA Valencia 2024** (`dana-valencia-2024`) | `data_inundaciones/` (`validar_viabilidad_dana.py`, `viabilidad_dana_valencia.md`) | `frontend_mapa/` (Visor + reproductor animado 4 Hyperframes) | `dev/*/hugo_*` |
+| **Yaro** (`@ItsYarosun`) | `yaro` | **Claude Code (VS Code)** | **Incendio Alto Mijares y Cultivos** (`incendio-forestal-mediterraneo`) | `data_incendios_cultivos/` (`validar_viabilidad_incendio.py`, `viabilidad_incendio_cultivos.md`) | `frontend_analytics/` (Gráficas dinámicas por Hyperframe + SHAP) | `dev/*/yaro_*` |
+| **Jesús** (`@jesusorellanagil2002`) | `jesus` | **Gemini Flash 3.8 (Antigravity)** | **Terremoto InSAR + Ciclón/El Niño Global** (`terremoto-insar-global` + `ciclon-elnino-global`) | `data_global_insar/` (`validar_viabilidad_global.py`, `viabilidad_global_insar.md`) | `frontend_storytelling/` (*Storyboard* animado Local ➔ Global + `sar_concepts`) | `dev/*/jesus_*` |
+| **Samu** (`@smulaboughaba`) | `samu` / `main` | Backend + IA + Vite 3D | Integración completa + **Pipeline Nivel 1 & 2** | `dev/backend/` + `dev/data_science/models/` | `dev/frontend/` (**Vite + MapLibre GL / Deck.gl + GSAP Hyperframes**) | `main` |
 
 ---
 
-## 3. Contrato Único de Datos (`datos_compartidos/mock_events_contract.json`)
+## 3. Puente Pipeline IA ➔ Web Animada (Los 4 *Hyperframes*)
 
-En cada rama aislada tenéis una copia de solo lectura en `datos_compartidos/mock_events_contract.json` (idéntica a [`dev/shared/mock_events_contract.json`](shared/mock_events_contract.json)):
-- `events[]`: `dana-valencia-2024`, `incendio-forestal-mediterraneo`, `terremoto-insar-global`, `ciclon-elnino-global`.
-- Claves por evento: `id`, `title`, `scale`, `niche`, `location`, `center_coords`, `bbox`, `dates` (`t0_pre`, `t1_event`, `t2_post_sar`), `sar_signature` (`sensor_reference`, `band`, `polarization`, `mechanism`, `jepa_latent_anomaly_score`, `affected_area_km2`, `false_positive_reduction_pct`), `open_data_metrics` (incluye `affected_land_cover_ha`), `shap_attributions[]` (`feature`, `contribution_pct`), `storytelling_summary` (texto), `attributions[]`.
-- `sar_concepts[]`: 5 tarjetas (`l-band`, `s-band`, `backscatter`, `insar`, `polarizacion`), cada una con `id`, `title`, `summary`.
+Cada archivo `hyperframes_<caso>.json` contiene **4 escenas animadas** que representan el flujo real del modelo (`RES-05` / `RES-06`):
+1. `frame_1_pre` (**`t0_pre` — Línea Base**): territorio estable antes del evento.
+2. `frame_2_event_blindness` (**`t1_event` — Crisis y Ceguera Óptica**): disparo del pico Open Big Data (`cloud_cover_mean` cercano al 95–100% en lluvia/tormenta, humo o epicentro sísmico).
+3. `frame_3_sar_level1` (**`t2_post_sar` — Nivel 1 `T-SAR-JEPA / OPERA`**): barrido radar con escena real de NASA (`browse_url`), caída de backscatter / desplazamiento InSAR y anomalía latente.
+4. `frame_4_fusion_level2_shap` (**Validación — Nivel 2 `LightGBM + SHAP`**): eliminación de falsos positivos y peso causal de cada variable (`shap_attributions`).
 
 ---
 
-## 4. Flujo de Trabajo del Equipo vs. Integración de Samu
-
-### Para Hugo, Yaro y Jesús en su rama (`hugo` | `yaro` | `jesus`)
-1. Clonar el repo y cambiar a su rama: `git checkout <tu-rama> && git pull origin <tu-rama>`.
-2. Abrir **solo la carpeta raíz del proyecto en esa rama** dentro de VS Code (Claude Code leerá `CLAUDE.md` automáticamente) o Antigravity (Jesús abre `LEEME_JESUS.md` y usa `GEMINI.md` con Flash 3.8).
-3. Subir **únicamente sus 2 carpetas**:
-   ```bash
-   git add <carpeta_frontend> <carpeta_datos>
-   git commit -m "feat(<tu-rama>): descripcion breve"
-   git push origin <tu-rama>
-   ```
-
-### Para Samu en `main` (`dev/scripts/sincronizar_equipo.sh`)
-Como las ramas `hugo`, `yaro` y `jesus` tienen raíces distintas a `main`, **NO se hace `git merge hugo` directo sobre `main`**. En su lugar, desde `main` se usa [`dev/scripts/sincronizar_equipo.sh`](scripts/sincronizar_equipo.sh):
+## 4. Importación en `main` (`dev/scripts/sincronizar_equipo.sh`)
 
 ```bash
-# 1. Revisar commits nuevos y archivos tocados en origin/hugo, origin/yaro y origin/jesus
+# Revisar entregas reales y viabilidad de los 3 compañeros desde origin
 ./dev/scripts/sincronizar_equipo.sh review
 
-# 2. Importar el código revisado hacia dev/frontend/* y dev/data_science/* sin afectar la estructura de main
-./dev/scripts/sincronizar_equipo.sh import all     # o especificar: hugo | yaro | jesus
+# Importar carpetas a dev/frontend/* y dev/data_science/* para integrar en Vite + FastAPI
+./dev/scripts/sincronizar_equipo.sh import all
 ```

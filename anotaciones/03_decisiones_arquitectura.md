@@ -18,7 +18,7 @@ Cada vez que el equipo tome una decisión técnica importante (stack, librería 
 | :--- | :--- | :--- | :--- | :--- |
 | `ADR-001` | `2026-11-13` | Estrategia de ramas individuales con consolidación en `main` | Aceptada | `@smulaboughaba` |
 | `ADR-002` | `2026-11-14` | Arquitectura híbrida en 2 niveles (Percepción temporal SAR tipo JEPA/U-TAE + Fusión Multimodal con Big Data/Open Data) | Propuesta | `@smulaboughaba` |
-| `ADR-003` | *(Fecha)* | *(Elección del stack Frontend / Backend)* | Propuesta | *(Usuario)* |
+| `ADR-003` | `2026-11-14` | Stack Frontend Vite + MapLibre GL/Deck.gl + GSAP Hyperframes y validación de casos por compañero | Aceptada | `@smulaboughaba` |
 
 ---
 
@@ -41,10 +41,14 @@ Cada vez que el equipo tome una decisión técnica importante (stack, librería 
 
 ---
 
-### `ADR-003` — *(Elección del stack Frontend / Backend)*
-- **Estado:** Propuesta
-- **Contexto:** *(Qué problema técnico o requisito del reto motiva la decisión)*
-- **Qué decidimos:** *(Tecnología, librería o patrón seleccionado)*
-- **Por qué (alternativas descartadas):** *(Razón de la elección frente a otras opciones)*
-- **Quién lo propuso:** *(Nombre / `@usuario`)*
+### `ADR-003` — Stack Frontend `Vite + MapLibre GL JS + Deck.gl + GSAP Hyperframes` y Validación Distribuida de Casos
+- **Estado:** Aceptada *(ampliado en [`../research/06_viabilidad_casos_storytelling_y_animacion_web.md`](../research/06_viabilidad_casos_storytelling_y_animacion_web.md))*
+- **Contexto:** La Web App debe renderizar mapas geoespaciales WebGL/3D fluidos y explicar cada catástrofe mediante animaciones secuenciales (*Hyperframes*) conectadas al pipeline IA (`Nivel 1 T-SAR-JEPA/OPERA` + `Nivel 2 LightGBM/SHAP`), mientras Hugo, Yaro y Jesús validan en paralelo la viabilidad real de cada caso desde sus ramas aisladas sin bloquearse con entornos complejos.
+- **Qué decidimos:**
+  1. **Motor visual maestro en `main` (`dev/frontend/`):** **Vite** como empaquetador moderno, **MapLibre GL JS + Deck.gl** (renderizado GPU WebGL2/3D con relieve DEM, barridos radar y capas georreferenciadas sin requerir token de pago Mapbox), **GSAP (`ScrollTrigger` + línea temporal de *Hyperframes*)** para coreografía visual de alto nivel, y **Chart.js** para gráficas `SHAP`, conectado por API a **FastAPI** (`dev/backend/`).
+  2. **Validación y prototipado en ramas aisladas (`hugo`, `yaro`, `jesus`):** Cada compañero valida un caso histórico real cruzando escenas **SAR reales sin login** (`NASA CMR API` / `NASA ASF GeoJSON API`) con **Open Big Data verificado** (`Open-Meteo ERA5` incluyendo nubosidad `cloud_cover_mean`, `USGS Earthquake API`, `NASA FIRMS`), exporta un artefacto estándar `hyperframes_<caso>.json` (4 *Hyperframes*) e implementa su reproductor web autocontenido HTML/JS para que Samu lo importe con [`../dev/scripts/sincronizar_equipo.sh`](../dev/scripts/sincronizar_equipo.sh) y lo conecte al shell **Vite + MapLibre/Deck.gl + GSAP**.
+- **Por qué (alternativas descartadas):**
+  - Usar *Mapbox GL JS* v2/v3 exige clave de facturación/token propietario en producción, mientras que *MapLibre GL JS + Deck.gl* es 100% abierto con aceleración WebGL equivalente.
+  - Exigir a todo el equipo configurar Vite/Node desde el primer día aumentaba la fricción en ramas aisladas; el contrato `hyperframes_<caso>.json` permite prototipar rápido y elevar el acabado final a nivel Awwward en `main`.
+- **Quién lo propuso:** `@smulaboughaba`
 
