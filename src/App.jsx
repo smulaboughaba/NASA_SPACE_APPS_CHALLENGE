@@ -1,24 +1,20 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { ChevronDown, Loader2 } from 'lucide-react';
 import OrbitalGlobe from './components/OrbitalGlobe';
 import TerrainViewer3D from './components/TerrainViewer3D';
 import TimelineControl from './components/TimelineControl';
 import ExaggerationPanel from './components/ExaggerationPanel';
 import StoryModeTour from './components/StoryModeTour';
 import TopShellBar, { ModeSwitchPill, TopRightUtilities } from './components/TopShellBar';
-import LandingHero from './components/LandingHero';
+import SearchWorkspace from './components/SearchWorkspace';
 import AgentModePreview from './components/AgentModePreview';
 import InteractiveStarfieldBg from './components/InteractiveStarfieldBg';
 import { computeInterpolatedBuffers } from './utils/sarMath';
 import { analyzeZoneClientSide } from './utils/liveZoneClient';
+import { formatDateOffset } from './utils/searchEngine';
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 const SETTINGS_KEY = 'geowave.settings.v1';
-
-const formatDateOffset = (daysAgo) => {
-  const d = new Date(Date.now() - daysAgo * 86400 * 1000);
-  return d.toISOString().slice(0, 10);
-};
 
 const loadStoredSettings = () => {
   try {
@@ -126,6 +122,7 @@ function AppContent() {
   const [activeMode, setActiveMode] = useState('search'); // 'search' | 'earth_engine' | 'agent'
   const [viewMode, setViewMode] = useState('globe'); // 'globe' | 'terrain' (dentro de earth_engine)
   const [globeMounted, setGlobeMounted] = useState(false);
+  const [searchExpanded, setSearchExpanded] = useState(false);
   const [apiMode, setApiMode] = useState(null); // null | 'local' | 'web'
   const [draftZone, setDraftZone] = useState(() => ({
     query: '',
@@ -137,6 +134,8 @@ function AppContent() {
     boxKm: 36,
     startDate: formatDateOffset(loadStoredSettings().defaultRangeDays + 2),
     endDate: formatDateOffset(2),
+    topic: 'hydrology',
+    preferredGibsLayer: 'truecolor',
     flyNonce: 0,
   }));
 
@@ -157,6 +156,7 @@ function AppContent() {
   const [selectedVertex, setSelectedVertex] = useState(null);
   const [storyModeActive, setStoryModeActive] = useState(false);
   const [liveError, setLiveError] = useState('');
+  const [mobileCasesOpen, setMobileCasesOpen] = useState(false);
   const [activeStep, setActiveStep] = useState(1);
   const [focusSubzone, setFocusSubzone] = useState({ id: 'all', lat: null, lon: null, nonce: 0 });
 
@@ -238,6 +238,7 @@ function AppContent() {
     tFloatRef.current = 0;
     setIsPlaying(false);
     setRenderMode('gibs');
+    setGibsLayerId('truecolor');
     setCompareMode(false);
     setSplitX(0.5);
     setStoryModeActive(false);
@@ -273,6 +274,11 @@ function AppContent() {
   const analyzeCustomZone = async (params) => {
     setLoading(true);
     setLiveError('');
+    const requestParams = {
+      ...params,
+      start_date: params?.start_date || params?.startDate,
+      end_date: params?.end_date || params?.endDate,
+    };
     try {
       let data = null;
       const allowLocal = settings.dataSourceMode !== 'web' && (import.meta.env.DEV || API_BASE);
@@ -281,7 +287,7 @@ function AppContent() {
           const res = await fetch(`${API_BASE}/api/analyze-zone`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(params),
+            body: JSON.stringify(requestParams),
           });
           const ct = res.headers.get('content-type') || '';
           if (res.ok && ct.includes('application/json')) {
@@ -295,7 +301,7 @@ function AppContent() {
         }
       }
       if (!data) {
-        data = await analyzeZoneClientSide(params);
+        data = await analyzeZoneClientSide(requestParams);
       }
       if (!Array.isArray(data?.timeline) || !Array.isArray(data?.base_elevation)) {
         throw new Error('No se pudo analizar la zona seleccionada');
@@ -308,6 +314,7 @@ function AppContent() {
       tFloatRef.current = 0;
       setIsPlaying(false);
       setRenderMode('gibs');
+      setGibsLayerId(params?.preferredGibsLayer || 'truecolor');
       setCompareMode(false);
       setSplitX(0.5);
       setStoryModeActive(false);
@@ -422,10 +429,15 @@ function AppContent() {
   const handleSelectSearchLocation = (loc) => {
     setDraftZone((prev) => ({
       ...prev,
-      query: loc.query || loc.label,
+      query: loc.query ?? prev.query,
       placeLabel: loc.label,
       lat: loc.lat,
       lon: loc.lon,
+      startDate: loc.startDate || prev.startDate,
+      endDate: loc.endDate || prev.endDate,
+      boxKm: loc.boxKm ?? prev.boxKm,
+      topic: loc.topic || prev.topic,
+      preferredGibsLayer: loc.preferredGibsLayer || prev.preferredGibsLayer,
       searchedCoords: { lat: loc.lat, lon: loc.lon },
       globeCamera: { center: [loc.lon, loc.lat], zoom: 10.8, pitch: 54, bearing: 0 },
       flyNonce: (prev.flyNonce || 0) + 1,
@@ -433,6 +445,25 @@ function AppContent() {
     setGlobeMounted(true);
     setActiveMode('earth_engine');
     setViewMode('globe');
+  };
+
+  const handleAnalyzeDirectFromSearch = (params) => {
+    setDraftZone((prev) => ({
+      ...prev,
+      query: params.query ?? prev.query,
+      placeLabel: params.label,
+      lat: params.lat,
+      lon: params.lon,
+      startDate: params.startDate || prev.startDate,
+      endDate: params.endDate || prev.endDate,
+      boxKm: params.boxKm ?? prev.boxKm,
+      topic: params.topic || prev.topic,
+      preferredGibsLayer: params.preferredGibsLayer || prev.preferredGibsLayer,
+      searchedCoords: { lat: params.lat, lon: params.lon },
+      globeCamera: { center: [params.lon, params.lat], zoom: 10.8, pitch: 54, bearing: 0 },
+      flyNonce: (prev.flyNonce || 0) + 1,
+    }));
+    analyzeCustomZone(params);
   };
 
   const handleBackToGlobe = () => {
@@ -500,7 +531,7 @@ function AppContent() {
   if (viewMode === 'globe') {
     return (
       <div
-        className="relative w-screen h-screen overflow-hidden"
+        className="relative w-screen h-[100dvh] overflow-hidden"
         style={{ background: spaceShellBackdrop }}
       >
         <InteractiveStarfieldBg active={activeMode !== 'earth_engine'} />
@@ -511,11 +542,11 @@ function AppContent() {
           settings={settings}
           onUpdateSettings={updateSettings}
           apiMode={apiMode}
-          showLeftBrand={activeMode !== 'search'}
+          showLeftBrand={activeMode !== 'search' || searchExpanded}
           showApiBadge={activeMode !== 'search'}
         />
 
-        {/* Capa 1: Portada (Modo Buscador) */}
+        {/* Capa 1: Portada / Apartado de Búsqueda (Modo Buscador) */}
         <section
           aria-hidden={activeMode !== 'search'}
           className={`absolute inset-0 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
@@ -524,13 +555,16 @@ function AppContent() {
               : 'opacity-0 scale-[0.985] -translate-y-2 pointer-events-none z-0 invisible'
           }`}
         >
-          <LandingHero
+          <SearchWorkspace
             scenarios={SCENARIOS}
             lang={settings.lang}
             apiMode={apiMode}
-            initialQuery={draftZone.query}
-            onSelectLocation={handleSelectSearchLocation}
+            draftZone={draftZone}
+            onUpdateDraftZone={updateDraftZone}
+            onFrameInGlobe={handleSelectSearchLocation}
+            onAnalyzeDirect={handleAnalyzeDirectFromSearch}
             onEnterScenario={loadScenario}
+            onExpandedChange={setSearchExpanded}
           />
         </section>
 
@@ -582,10 +616,10 @@ function AppContent() {
   }
 
   return (
-    <div className="relative w-screen h-screen bg-[#050508] flex flex-col overflow-hidden">
-      {/* Cabecera Superior Minimalista con Switch integrado y solo icono en esquina izquierda */}
-      <header className="min-h-[52px] bg-zinc-900/95 backdrop-blur-xl border-b border-zinc-800 px-4 py-2 flex flex-wrap items-center justify-between gap-2.5 shrink-0 z-30">
-        <div className="flex items-center gap-3">
+    <div className="relative w-screen h-[100dvh] bg-[#050508] flex flex-col overflow-hidden">
+      {/* Cabecera Superior Minimalista con Switch integrado y menú de casos plegable en móvil */}
+      <header className="relative min-h-[48px] sm:min-h-[52px] bg-zinc-900/95 backdrop-blur-xl border-b border-zinc-800 px-2.5 sm:px-4 py-1.5 sm:py-2 flex items-center justify-between gap-2 shrink-0 z-30">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <button
             type="button"
             onClick={() => handleModeChange('search')}
@@ -599,7 +633,7 @@ function AppContent() {
             />
           </button>
 
-          <nav className="hidden md:flex items-center gap-1 bg-zinc-950 p-1 rounded-xl border border-zinc-800">
+          <nav className="hidden lg:flex items-center gap-1 bg-zinc-950 p-1 rounded-xl border border-zinc-800">
             {SCENARIOS.map((sc) => (
               <button
                 key={sc.id}
@@ -614,9 +648,77 @@ function AppContent() {
               </button>
             ))}
           </nav>
+
+          {/* Selector plegable de casos demostrativos en móvil y tablet */}
+          <div className="relative lg:hidden">
+            <button
+              type="button"
+              onClick={() => setMobileCasesOpen((v) => !v)}
+              aria-expanded={mobileCasesOpen}
+              className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border text-[11px] font-medium transition-colors ${
+                mobileCasesOpen
+                  ? 'bg-white/15 border-white/25 text-white'
+                  : 'bg-zinc-950 border-zinc-800 text-zinc-200 hover:border-zinc-700'
+              }`}
+            >
+              <span>Casos</span>
+              <ChevronDown className={`w-3 h-3 transition-transform ${mobileCasesOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {mobileCasesOpen && (
+              <div className="absolute left-0 mt-2 w-60 rounded-2xl bg-zinc-900/95 backdrop-blur-xl border border-white/15 shadow-2xl p-2 space-y-2 z-50">
+                <div className="space-y-1 border-b border-white/10 pb-2 md:hidden">
+                  <div className="px-2 text-[10px] font-mono uppercase tracking-wider text-zinc-500">Modos</div>
+                  {[
+                    { id: 'search', label: settings.lang === 'en' ? 'Search Mode' : 'Modo Buscador' },
+                    { id: 'earth_engine', label: 'Earth Engine' },
+                    { id: 'agent', label: 'Agent Mode' },
+                  ].map((m) => (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => {
+                        setMobileCasesOpen(false);
+                        handleModeChange(m.id);
+                      }}
+                      className={`w-full text-left px-3 py-1.5 rounded-xl text-xs transition-colors ${
+                        activeMode === m.id
+                          ? 'bg-cyan-400/15 text-cyan-200 font-semibold'
+                          : 'text-zinc-200 hover:bg-white/10'
+                      }`}
+                    >
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="space-y-1">
+                  <div className="px-2 text-[10px] font-mono uppercase tracking-wider text-zinc-500">
+                    {settings.lang === 'en' ? 'Cases' : 'Casos demostrativos'}
+                  </div>
+                  {SCENARIOS.map((sc) => (
+                    <button
+                      key={sc.id}
+                      type="button"
+                      onClick={() => {
+                        setMobileCasesOpen(false);
+                        loadScenario(sc.id);
+                      }}
+                      className={`w-full text-left px-3 py-1.5 rounded-xl text-xs transition-colors ${
+                        activeScenarioId === sc.id
+                          ? 'bg-zinc-100 text-zinc-950 font-semibold'
+                          : 'text-zinc-200 hover:bg-white/10'
+                      }`}
+                    >
+                      {sc.shortLabel}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="flex items-center justify-center">
+        <div className="hidden md:flex items-center justify-center">
           <ModeSwitchPill
             activeMode={activeMode}
             onChangeMode={handleModeChange}
@@ -625,7 +727,7 @@ function AppContent() {
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <StoryModeTour
             dataset={dataset}
             storyModeActive={storyModeActive}
@@ -644,21 +746,6 @@ function AppContent() {
           />
         </div>
       </header>
-
-      {/* Selector móvil */}
-      <div className="flex md:hidden gap-1.5 px-3 py-1.5 bg-zinc-900 border-b border-zinc-800 overflow-x-auto shrink-0">
-        {SCENARIOS.map((sc) => (
-          <button
-            key={sc.id}
-            onClick={() => loadScenario(sc.id)}
-            className={`px-2.5 py-1 rounded-lg text-[11px] whitespace-nowrap transition-colors ${
-              activeScenarioId === sc.id ? 'bg-zinc-100 text-zinc-950 font-semibold' : 'bg-zinc-800 text-zinc-300'
-            }`}
-          >
-            {sc.shortLabel}
-          </button>
-        ))}
-      </div>
 
       {/* Área Principal: Lienzo 3D + Panel Lateral */}
       <div className="flex-1 min-h-0 flex flex-col lg:flex-row">
@@ -771,7 +858,7 @@ function AppContent() {
           settings={settings}
           onUpdateSettings={updateSettings}
           apiMode={apiMode}
-          showLeftBrand={activeMode !== 'search'}
+          showLeftBrand={activeMode !== 'search' || searchExpanded}
           showApiBadge={activeMode !== 'search'}
         />
 
@@ -783,13 +870,16 @@ function AppContent() {
               : 'opacity-0 scale-[0.985] -translate-y-2 pointer-events-none z-0 invisible'
           }`}
         >
-          <LandingHero
+          <SearchWorkspace
             scenarios={SCENARIOS}
             lang={settings.lang}
             apiMode={apiMode}
-            initialQuery={draftZone.query}
-            onSelectLocation={handleSelectSearchLocation}
+            draftZone={draftZone}
+            onUpdateDraftZone={updateDraftZone}
+            onFrameInGlobe={handleSelectSearchLocation}
+            onAnalyzeDirect={handleAnalyzeDirectFromSearch}
             onEnterScenario={loadScenario}
+            onExpandedChange={setSearchExpanded}
           />
         </section>
 

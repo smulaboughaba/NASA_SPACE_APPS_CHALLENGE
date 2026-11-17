@@ -166,18 +166,20 @@ export default function StoryModeTour({
           if (!storyModeActive) setStepIdx(0);
           setStoryModeActive((v) => !v);
         }}
-        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs transition-all ${
+        title={storyModeActive ? 'Detener Demo' : 'Demo rápida'}
+        className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border text-xs transition-all ${
           storyModeActive
             ? 'bg-zinc-100 border-zinc-100 text-zinc-950 font-semibold shadow-sm'
             : 'bg-zinc-800 hover:bg-zinc-700 border-zinc-700 text-zinc-100 font-medium'
         }`}
       >
         {storyModeActive ? <Square className="w-3.5 h-3.5" /> : <PlayCircle className="w-3.5 h-3.5 text-zinc-300" />}
-        {storyModeActive ? 'Detener Demo' : 'Demo rápida'}
+        <span className="hidden sm:inline">{storyModeActive ? 'Detener Demo' : 'Demo rápida'}</span>
+        <span className="sm:hidden">{storyModeActive ? 'Parar' : 'Demo'}</span>
       </button>
 
       {storyModeActive && (
-        <div className="fixed bottom-28 left-4 z-30 max-w-sm bg-zinc-900/95 backdrop-blur-xl border border-zinc-700 rounded-2xl p-4 shadow-2xl space-y-2.5">
+        <div className="fixed bottom-24 sm:bottom-28 left-3 right-3 sm:left-4 sm:right-auto z-30 sm:max-w-sm bg-zinc-900/95 backdrop-blur-xl border border-zinc-700 rounded-2xl p-3.5 sm:p-4 shadow-2xl space-y-2.5">
           <div className="flex items-center justify-between text-[11px] font-mono text-zinc-400 uppercase tracking-[0.12em]">
             <span className="inline-flex items-center gap-1.5">
               <BookOpen className="w-3.5 h-3.5 text-zinc-300" />

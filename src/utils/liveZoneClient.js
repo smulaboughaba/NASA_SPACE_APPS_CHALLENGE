@@ -3,7 +3,7 @@
 
 const GRID_SIZE = 128;
 
-const VARIABLE_DEFINITIONS = {
+export const VARIABLE_DEFINITIONS = {
   T2M: {
     nombre: 'Temperatura superficial del aire (2 m)',
     unidad: '°C',
@@ -411,9 +411,19 @@ function computeTopographicWeights(elevNorm, elevM, topic) {
 /**
  * Construye un dataset regional completo 100% en el navegador (sin servidor Python).
  */
-export async function analyzeZoneClientSide({ bbox, start_date, end_date, topic = 'hydrology', label = 'Región seleccionada' }) {
-  const d0 = new Date(`${start_date}T00:00:00Z`);
-  const d1 = new Date(`${end_date}T00:00:00Z`);
+export async function analyzeZoneClientSide({
+  bbox,
+  start_date,
+  end_date,
+  startDate,
+  endDate,
+  topic = 'hydrology',
+  label = 'Región seleccionada',
+}) {
+  const rawStart = start_date || startDate;
+  const rawEnd = end_date || endDate;
+  const d0 = new Date(`${rawStart}T00:00:00Z`);
+  const d1 = new Date(`${rawEnd}T00:00:00Z`);
   const safeD0 = Number.isNaN(d0.getTime()) ? new Date(Date.now() - 60 * 86400000) : d0;
   const safeD1 = Number.isNaN(d1.getTime()) || d1 < safeD0 ? new Date(Date.now() - 2 * 86400000) : d1;
   const startIso = safeD0.toISOString().slice(0, 10);
@@ -538,3 +548,4 @@ export async function analyzeZoneClientSide({ bbox, start_date, end_date, topic 
     cached: false,
   };
 }
+

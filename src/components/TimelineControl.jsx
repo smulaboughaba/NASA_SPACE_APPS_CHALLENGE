@@ -1,5 +1,5 @@
-import React from 'react';
-import { Activity, Calendar, ChevronLeft, ChevronRight, Columns2, Eye, Film, Pause, Play, Repeat, Sigma, SkipBack } from 'lucide-react';
+import React, { useState } from 'react';
+import { Activity, Calendar, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Columns2, Eye, Film, Pause, Play, Repeat, Sigma, SkipBack } from 'lucide-react';
 import { getTemporalObservationStatus } from '../utils/sarMath';
 
 export default function TimelineControl({
@@ -26,6 +26,7 @@ export default function TimelineControl({
   setSplitX,
   buffers,
 }) {
+  const [mobileExpanded, setMobileExpanded] = useState(false);
   const effectiveRenderMode = renderMode || (opticalMode ? 'optical' : 'hybrid');
   const selectRenderMode = (mode) => {
     if (typeof setRenderMode === 'function') {
@@ -72,13 +73,69 @@ export default function TimelineControl({
   };
 
   return (
-    <div className="bg-zinc-900/95 backdrop-blur-xl border-t border-zinc-800 px-4 py-3 flex flex-col gap-2.5 shrink-0">
+    <div className="bg-zinc-900/95 backdrop-blur-xl border-t border-zinc-800 px-3 sm:px-4 py-2 sm:py-3 flex flex-col gap-2 sm:gap-2.5 shrink-0">
+      {/* Barra móvil ultra-compacta: Play + Anterior/Siguiente + Slider + Fecha + Toggle plegable */}
+      <div className="flex md:hidden items-center gap-2">
+        <button
+          onClick={handlePlayToggle}
+          aria-label={isPlaying ? 'Pausar' : 'Reproducir'}
+          className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-zinc-100 hover:bg-white text-zinc-950 font-semibold transition-colors shadow-sm shrink-0"
+        >
+          {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+        </button>
+
+        <button
+          onClick={stepPrev}
+          aria-label="Anterior"
+          className="p-1.5 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-200 shrink-0"
+        >
+          <ChevronLeft className="w-3.5 h-3.5" />
+        </button>
+        <button
+          onClick={stepNext}
+          aria-label="Siguiente"
+          className="p-1.5 rounded-lg bg-zinc-800 border border-zinc-700 text-zinc-200 shrink-0"
+        >
+          <ChevronRight className="w-3.5 h-3.5" />
+        </button>
+
+        <input
+          type="range"
+          min={0}
+          max={maxIdx}
+          step={discreteOnly ? 1 : 0.01}
+          value={safeT}
+          onChange={(e) => handleSeek(parseFloat(e.target.value))}
+          className="flex-1 min-w-0 h-2 cursor-pointer"
+        />
+
+        <span className="text-[11px] font-mono tabular-nums text-zinc-200 shrink-0">
+          {status.interpolatedDate}
+        </span>
+
+        <button
+          type="button"
+          onClick={() => setMobileExpanded((v) => !v)}
+          aria-expanded={mobileExpanded}
+          title="Más controles temporales"
+          className={`p-1.5 rounded-lg border text-xs shrink-0 transition-colors ${
+            mobileExpanded
+              ? 'bg-cyan-400/15 border-cyan-400/50 text-cyan-200'
+              : 'bg-zinc-800 border-zinc-700 text-zinc-300'
+          }`}
+        >
+          {mobileExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
+        </button>
+      </div>
+
+      {/* Controles completos (siempre visibles en md+, plegables en móvil) */}
+      <div className={`${mobileExpanded ? 'flex' : 'hidden'} md:flex flex-col gap-2.5`}>
       {/* Fila superior: Transporte, velocidad, estado de pasada y toggles */}
       <div className="flex flex-wrap items-center justify-between gap-2.5">
         <div className="flex flex-wrap items-center gap-1.5">
           <button
             onClick={handlePlayToggle}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-zinc-100 hover:bg-white text-zinc-950 font-semibold text-xs transition-colors shadow-sm"
+            className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-zinc-100 hover:bg-white text-zinc-950 font-semibold text-xs transition-colors shadow-sm"
           >
             {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
             {isPlaying ? 'Pausar' : 'Reproducir'}
@@ -95,7 +152,7 @@ export default function TimelineControl({
           <button
             onClick={stepPrev}
             title="Adquisición anterior"
-            className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 transition-colors"
+            className="hidden md:inline-flex p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 transition-colors"
           >
             <ChevronLeft className="w-3.5 h-3.5" />
           </button>
@@ -103,7 +160,7 @@ export default function TimelineControl({
           <button
             onClick={stepNext}
             title="Siguiente adquisición"
-            className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 transition-colors"
+            className="hidden md:inline-flex p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 transition-colors"
           >
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
@@ -170,10 +227,10 @@ export default function TimelineControl({
           </div>
         </div>
 
-        {/* Estado de adquisición satelital + modo pasadas reales (ancho estable sin saltos de línea) */}
-        <div className="flex items-center gap-2 shrink-0">
+        {/* Estado de adquisición satelital + modo pasadas reales */}
+        <div className="flex flex-wrap items-center gap-2">
           <div
-            className={`flex items-center justify-center gap-2 px-3 py-1 rounded-full border text-xs font-mono tabular-nums whitespace-nowrap min-w-[238px] ${
+            className={`flex items-center justify-center gap-2 px-2.5 sm:px-3 py-1 rounded-full border text-[11px] sm:text-xs font-mono tabular-nums whitespace-nowrap sm:min-w-[238px] max-w-full ${
               status.isReal
                 ? 'bg-emerald-950/60 border-emerald-500/40 text-emerald-200'
                 : 'bg-amber-950/50 border-amber-500/40 text-amber-200'
@@ -228,9 +285,9 @@ export default function TimelineControl({
         </div>
       </div>
 
-      {/* Slider continuo Eje T + marcadores */}
+      {/* Slider continuo Eje T + marcadores (en escritorio; móvil usa la barra superior compacta) */}
       <div className="flex flex-col gap-1.5">
-        <div className="flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-3">
           <span className="inline-flex items-center gap-1.5 text-[11px] font-mono text-zinc-400 shrink-0">
             <Calendar className="w-3.5 h-3.5 text-zinc-400" />
             EJE T
@@ -249,7 +306,7 @@ export default function TimelineControl({
           </span>
         </div>
 
-        <div className="flex justify-between text-[11px] font-mono tabular-nums text-zinc-400 px-12 gap-2 overflow-x-auto">
+        <div className="flex justify-between text-[11px] font-mono tabular-nums text-zinc-400 md:px-12 gap-3 overflow-x-auto">
           {timeline.map((step, idx) => (
             <button
               key={step.fecha}
@@ -267,7 +324,7 @@ export default function TimelineControl({
       </div>
 
       {/* Descripción de fase + cortinilla si está activo */}
-      <div className="flex items-center justify-between gap-2 pt-2 border-t border-zinc-800 text-xs min-h-[28px]">
+      <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-zinc-800 text-xs min-h-[28px]">
         <div className="text-zinc-300 flex items-center gap-2 min-w-0">
           <span className="font-mono text-[11px] px-2 py-0.5 rounded bg-zinc-800 border border-zinc-700 text-zinc-100 shrink-0">
             {status.nearestFrame?.etiqueta}
@@ -289,6 +346,7 @@ export default function TimelineControl({
             <span>{Math.round(splitX * 100)}%</span>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

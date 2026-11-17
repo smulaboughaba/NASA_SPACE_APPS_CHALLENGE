@@ -2,9 +2,10 @@
 
 > **Propósito del documento**: Especificación integral de arquitectura de producto, diseño UI/UX, separación modular, contratos de estado y diseño técnico del futuro **Agent Mode (Chat IA + Sandbox + Harness)** para **GEO-WAVE**.
 >
-> **Documentos relacionados**:
-> - Diagnóstico de la demo actual y deuda técnica P0–P2: [AUDITORIA_Y_ROADMAP.md](./AUDITORIA_Y_ROADMAP.md).
-> - Desglose ejecutable de tareas y supervisión de la primera fase (sin modificar la app hasta revisión): [FASE_1_TODOS.md](./FASE_1_TODOS.md).
+- **Documentos relacionados**:
+  - Diagnóstico de la demo actual y deuda técnica P0–P2: [AUDITORIA_Y_ROADMAP.md](./AUDITORIA_Y_ROADMAP.md).
+  - TO-DOs de Fase 1 (Portada, Shell y Globo limpio): [FASE_1_TODOS.md](./FASE_1_TODOS.md).
+  - Estudio crítico y TO-DOs de Fase 2 (Buscador + Auditoría de Fuentes y Specs Oficiales): [FASE_2_ESTUDIO_CRITICO.md](./FASE_2_ESTUDIO_CRITICO.md) · [FASE_2_TODOS.md](./FASE_2_TODOS.md).
 
 ---
 
@@ -136,8 +137,8 @@ Cuando el usuario hace clic sobre un resultado geográfico (lugar o coordenada),
 - **Identidad clara**: Nombre completo resuelto (`Valencia, Comarca de Valencia, España`), coordenadas exactas y tipo de relieve esperado.
 - **Parámetros previos**:
   - Selector **`Desde` / `Hasta`** con validación inmediata (`Desde < Hasta`, tope de rango razonable y aviso si las fechas son muy recientes para productos retardados como SMAP/NDVI).
-  - Slider **`Tamaño de caja de análisis`** ampliado de **`20 km` hasta `200 km`**, con recomendación automática según la capa o variable elegida (p. ej. `36 km` para relieve/incendio, `120–200 km` para `NO₂`, `CO`, `Aerosoles`, `Lluvia IMERG`).
-  - Selector de **Enfoque para `Simulación`** (`Hidrología / Lluvia`, `Térmico / Incendios`, `Sísmico / Corteza`) — eliminando el bloqueo oculto actual a `'hydrology'`.
+  - Slider **`Tamaño de caja de análisis`** mantenido en **`20 km` a `60 km`** (`36 km` por defecto, calibrado según las especificaciones de MDE/satélite vigentes; ampliación regional diferida hasta completar la auditoría oficial de specs).
+  - Selector de **Enfoque inicial / Simulación** (`Hidrología / Lluvia`, `Térmico / Incendios`, `Sísmico / Corteza`), vinculado a la capa satelital sugerida al abrir `Vista Satélite`.
 - **3 botones de salida claros**:
   1. **`Encuadrar en Earth Engine`** → Abre `Modo Earth Engine` (Globo) ya volado sobre esas coordenadas, con las fechas y caja sincronizadas.
   2. **`Analizar directamente en 3D`** *(CTA primario)* → Ejecuta `analyzeZoneClientSide` y entra directo al Visor Terreno 3D.
@@ -167,7 +168,7 @@ El espacio **`Modo Earth Engine`** agrupa todo el motor geoespacial 3D ya desarr
 - **Mira central de encuadre**: rectángulo cian centrado para apuntar a cualquier zona moviendo/haciendo zoom en el globo.
 - **Panel derecho único de Encuadre y Ventana**:
   - Muestra el **nombre de la zona actual** (`draftZone.label`, visible por fin!) o coordenadas bajo la mira (`lat, lon`, `z`, extensión visible `~km`).
-  - Selectores de fecha **`Desde`** / **`Hasta`**, slider de **`Tamaño de caja`** (`20–200 km`) y etiqueta de **Enfoque físico** para simulaciones.
+  - Selectores de fecha **`Desde`** / **`Hasta`**, slider de **`Tamaño de caja`** (`20–60 km`) y etiqueta de **Enfoque físico** para simulaciones.
   - Tarjeta de diagnóstico de escala (`Vista continental` / `Escala óptima` / `Zoom muy cercano`) y botón primario **`Analizar esta zona en 3D`**.
 - **Barra inferior de `Casos demostrativos`**: mantiene acceso directo a `Los Ángeles · Incendio`, `Kamchatka · Sismo NISAR` y `Málaga · DANA Agua`.
 - **Persistencia de estado**: al pulsar `Analizar esta zona en 3D` o volver desde el Visor 3D al Globo, las coordenadas de cámara (`center, zoom, pitch`), fechas y tamaño de caja **se conservan** en el estado padre (`App.jsx`) en vez de resetearse al océano Atlántico.
@@ -362,8 +363,48 @@ WorkspaceState = {
 | :--- | :--- | :--- | :--- |
 | **Fase 0 · Estabilización Base** | Corregir solapamiento de ficha de capa y `Antes/Después`, suavizar artefacto *high-pass* del shader, bajar opacidad en capas `maxLevel <= 6`, limpiar `README.md` (sin NASA y fiel a la app). | `TerrainViewer3D.jsx`, `gibsLayers.js`, `README.md` | Cero solapamientos en 1280px–1600px, relieve limpio, `grep -i NASA README.md` = 0, `npm run build` OK. |
 | **Fase 1 · Shell Global + Portada + Globo sin buscador** | Crear `TopShellBar` (`Modo Buscador` / `Modo Earth Engine` / `Agent Mode`, `ES▾`, Ajustes, Info), vista hero `LandingHero` fiel a la inspiración (`Ge[Logo]Wave` + spotlight), y **eliminar la caja de búsqueda izquierda de `OrbitalGlobe.jsx`**. | `App.jsx`, `LandingHero.jsx` (nuevo), `TopShellBar.jsx` (nuevo), `OrbitalGlobe.jsx` | La entrada se ve fiel al diseño objetivo; `Earth Engine` muestra el globo limpio sin caja izquierda y conserva estado al volver del 3D. |
-| **Fase 2 · Apartado de Búsqueda Completo** | Extraer y ampliar buscador: parser de coordenadas, Nominatim `limit=5` con manejo de errores, búsqueda en capas GIBS/variables/casos, pre-configurador de zona (`20–200 km`, fechas, enfoque) y puente directo a Globo / 3D / Agent. | `SearchWorkspace.jsx` (nuevo), `searchEngine.js` (nuevo), `App.jsx` | Buscar `"Valencia"` ofrece múltiples candidatos reales; elegir uno permite ir directo al 3D o encuadrar en Globo con persistencia total. |
+| **Fase 2 · Apartado de Búsqueda + Auditoría Oficial de Fuentes** | Inventariar todas las fuentes/satélites y contrastar sus specs oficiales con documentación; corregir bug `start_date`/`end_date`; extraer `searchEngine.js`, construir `SearchWorkspace.jsx` (`20–60 km`, validación fechas, capas/variables, `Analizar directo en 3D` / Globo). | `docs/ESPECIFICACIONES_SATELITES_Y_FUENTES.md` (nuevo), `liveZoneClient.js`, `SearchWorkspace.jsx` (nuevo), `searchEngine.js` (nuevo), `App.jsx` | Catálogo oficial documentado; buscar `"Valencia"` o `"lluvia"` ofrece candidatos filtrables; las fechas elegidas llegan intactas a `liveZoneClient.js`. |
 | **Fase 3 · Coherencia Temporal y Rigor en Visor 3D** | Sincronizar `TimelineControl` con los `N` días GIBS en `Vista Satélite`, alinear paletas de leyendas, actualizar textos/etiquetas en `ExaggerationPanel` y adaptar `StoryModeTour` para zonas en vivo. | `TimelineControl.jsx`, `ExaggerationPanel.jsx`, `StoryModeTour.jsx`, `TerrainViewer3D.jsx` | En `Vista Satélite`, cada día real GIBS se refleja en el slider sin etiqueta falsa `"Interpolado"`; `Demo rápida` no muestra textos de LA sobre otra ciudad. |
 | **Fase 4 · UI Completa de `Agent Mode` (Shell + Simulador de Harness)** | Implementar la interfaz de 3 columnas (`AgentWorkspace.jsx`), tarjetas colapsables de `ToolTraceCard`, mini-gráficas inline, inspector de código/datos del sandbox, confirmación humana y botones puente a `Earth Engine`. | `AgentWorkspace.jsx` (nuevo), `ToolTraceCard.jsx` (nuevo), `SandboxInspector.jsx` (nuevo), `App.jsx` | Flujo UI completo navegable end-to-end con trazas mock realistas y salto real desde un artefacto del chat hasta la escena 3D en Earth Engine. |
 | **Fase 5 · Sandbox + Harness Real** | Conectar Pyodide Web Worker (modo web estático) y/o endpoint backend sandbox + LLM con los 6 `Tool Contracts`, streaming SSE y guardrails numéricos. | `sandboxWorker.js` / backend agent service | Respuestas del agente verificadas al 100 % contra llamadas reales a herramientas dentro del sandbox con timeout y aislamiento activos. |
+
+---
+
+## 9. Visión Futura (Post-MVP): Modelado 3D Volumétrico Real + Backend Híbrido Rust/Python + Harness IA & BYOAK
+
+> Esta sección consolida la arquitectura objetivo a medio/largo plazo para evolucionar desde un visor web ligero hacia una plataforma geoespacial y de agentes multiusuario con modelado físico real.
+
+### 9.1. De heurística visual a modelado 3D real guiado por datos satelitales
+- **Estado actual (MVP)**: el MDE (`Terrarium`) construye la topografía base `(x, y, z)` y las capas satelitales (`GIBS`) o series (`POWER`, `CAMS`, `USGS`) actúan como textura superpuesta o simulación paramétrica ligera en navegador ([liveZoneClient.js](../src/utils/liveZoneClient.js)). Por coherencia UX, durante esta etapa los controles previos del buscador y del globo se mantienen al mínimo (**solo `Fechas` + `Caja 20–60 km`**), evitando selectores que no alteren geometría real.
+- **Objetivo futuro**: cuando el backend ingiera productos raster/SAR/altimetría/batimetria reales (altura de lámina de inundación, dosel/biomasa LiDAR, plumas térmicas/atmosféricas, deformación interferométrica `LOS` píxel a píxel en GeoTIFF/Zarr/NetCDF), los datos satelitales moldearán directamente la **geometría y volumetría 3D real (ancho, largo y cota física)** junto con el terreno. En ese escenario sí cobrarán pleno sentido los selectores de modelo físico previo.
+
+### 9.2. Arquitectura Híbrida de Backend (`Rust` + `Python`)
+En lugar de reescribir el ecosistema científico desde cero ni depender de un servidor Python monolítico (actualmente [live_api.py](../live_api.py) sobre `ThreadingHTTPServer`), la arquitectura separa responsabilidades por fortaleza técnica:
+
+| Capa | Tecnología objetivo | Responsabilidad concreta |
+| :--- | :--- | :--- |
+| **API Gateway, Auth, SSE/WS y Billing** | **`Rust`** (`axum` + `tokio` + `tower`) | Concurrencia sin GIL con mínima huella de RAM (~decenas de MB), terminación/validación estricta, *rate limiting* por tier/proveedor, gestión de cuotas y multiplexación SSE/WS en tiempo real. |
+| **Motor de Geometría 3D y Caché** | **`Rust`** (`rayon`, buffers binarios / `glTF`) | Decodificación paralela de DEMs/rásteres, cálculo exacto de normales/pendientes, generación de mallas cuantizadas binarias comprimidas (`zstd` / `glTF`) y caché rápida en disco en sustitución de payloads JSON masivos. |
+| **Harness de Agentes IA** *(estilo `jcode`)* | **`Rust`** | Event loop determinista para workflows multi-agente de alta concurrencia: máquina de estados, límites estrictos de pasos/presupuesto, *circuit breakers*, cancelación instantánea y streaming unificado hacia la UI. |
+| **Plano Científico e Ingesta Satelital** | **`Python`** *(workers efímeros / IPC)* | Aprovechamiento de librerías científicas maduras sobre C/Fortran (`rasterio`, `xarray`, `rioxarray`, `scipy`, `netCDF4`, Earthdata/Copernicus/OpenDAP/Zarr) comunicadas con el plano Rust por Unix socket, gRPC o Arrow IPC, o ejecutadas dentro del propio sandbox analítico. |
+
+### 9.3. Seguridad del Harness en Producción (Sandboxes Multi-Tenant)
+La ligereza de un harness en Rust no sustituye el aislamiento de ejecución cuando el agente corre herramientas o código para usuarios remotos:
+1. **Aislamiento de cómputo por sesión (no Docker estándar compartido)**:
+   - Ejecución en **MicroVMs** (**Firecracker**, **Kata Containers**) o runtimes endurecidos (**gVisor / `runsc`** o proveedores efímeros tipo **E2B / Fly Machines**), con sistema raíz en solo lectura, `tmpfs` acotado, `no-new-privileges`, `seccomp` y límites estrictos `cgroups v2` (CPU, RAM, disco, `--pids-limit` y timeout duro).
+2. **Egress Proxy en Rust (cero red abierta en el sandbox)**:
+   - El sandbox carece de acceso libre a internet o a la red interna (mitigando SSRF contra servicios internos y metadata cloud tipo `169.254.169.254`, abuso de ancho de banda o exfiltración).
+   - Toda salida HTTP obligatoriamente atraviesa un **proxy saliente en Rust** con *allowlist* estricta a dominios científicos verificados (`GIBS`, `POWER`, `Open-Meteo`, `USGS`, `Nominatim`, etc.).
+3. **Arquitectura *Secretless Sandbox***:
+   - Ninguna clave privada (ni claves maestras de servidor ni **BYOAK** de usuario) entra jamás como variable de entorno ni fichero dentro del sandbox.
+   - El **Harness en Rust** (fuera del sandbox) sostiene la sesión con el proveedor LLM y entrega al sandbox únicamente entradas/datos ya validados por contrato.
+
+### 9.4. UX Transparente en `Agent Mode` y Modelo Económico Dual (`BYOAK` vs. Plan Gestionado)
+- **Normalización de `thinking` multi-proveedor**:
+  - Cada proveedor LLM expone el razonamiento de manera distinta (*extended thinking* en Anthropic, *thoughts* en Gemini o *reasoning summaries* en modelos de razonamiento de OpenAI). El Harness en Rust normaliza estas trazas a un único flujo (`agent.thinking_delta`, `tool.call_start`, `tool.sandbox_log`, `tool.call_result`) para renderizarse de forma uniforme e inteligible en la UI.
+- **Tooltips científicos y auditabilidad**:
+  - Cada herramienta, parámetro o métrica mostrada al usuario incorpora **tooltips técnicos transparentes**: fuente exacta, unidad física, resolución espacial nativa (`~30 m` DEM, `~250 m` MODIS, `~0.5°` rejilla climática) y trazabilidad del cálculo ejecutado en sandbox.
+- **Acceso dual (`BYOAK` vs. Suscripción / Créditos)**:
+  - **`BYOAK` (*Bring Your Own API Key*)**: el usuario introduce su propia API key para operar con su cuota directa del proveedor; viaja bajo TLS en sesión efímera (en memoria del proxy *stateless* o cifrada en sesión sin persistirse en disco ni logs).
+  - **Plan Gestionado**: el gateway en Rust actúa como *metering proxy*, verificando saldo/cuota antes de lanzar cada turno o sandbox, contabilizando tokens (`input` / `output` / `reasoning`) junto con segundos de cómputo en sandbox y aplicando *rate limits* diferenciados por plan.
 

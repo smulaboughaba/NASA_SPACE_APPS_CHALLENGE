@@ -3,8 +3,10 @@ import {
   Activity,
   ArrowLeft,
   BookOpen,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
   Check,
   Clock,
   Crosshair,
@@ -20,6 +22,7 @@ import {
   Upload,
   Waves,
   Eye,
+  X,
 } from 'lucide-react';
 import {
   analyzeEarthSystemSeries,
@@ -428,6 +431,9 @@ export default function ExaggerationPanel({
   const [importedCsv, setImportedCsv] = useState(null);
   const [panelTab, setPanelTab] = useState('simple');
   const [selectedVar, setSelectedVar] = useState(null);
+  const [drawerOpen, setDrawerOpen] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth >= 1024 : true
+  );
   const csvInputRef = useRef(null);
 
   useEffect(() => {
@@ -649,8 +655,32 @@ export default function ExaggerationPanel({
     { num: 3, title: 'Qué cambió' },
   ];
 
+  if (!drawerOpen) {
+    return (
+      <div className="shrink-0 z-20 bg-zinc-900/95 backdrop-blur-xl border-t lg:border-t-0 lg:border-l border-zinc-800 px-3 py-1.5 lg:px-1.5 lg:py-3 lg:w-11 flex lg:flex-col items-center justify-between lg:justify-start gap-2">
+        <button
+          type="button"
+          onClick={() => setDrawerOpen(true)}
+          className="w-full lg:w-8 lg:h-8 flex items-center justify-between lg:justify-center gap-2 rounded-xl px-2.5 py-1 lg:p-0 bg-zinc-950/75 hover:bg-zinc-800 border border-zinc-800 text-xs text-zinc-200 transition-colors"
+          title="Abrir panel de análisis"
+        >
+          <span className="lg:hidden inline-flex items-center gap-2 font-medium truncate">
+            <BookOpen className="w-3.5 h-3.5 text-cyan-300 shrink-0" />
+            <span className="truncate">Análisis y Guía</span>
+            <span className="text-[10px] font-mono text-cyan-300">Paso {activeStep}/3</span>
+          </span>
+          <span className="lg:hidden inline-flex items-center gap-1 text-[11px] font-mono text-zinc-400 shrink-0">
+            Abrir
+            <ChevronUp className="w-3.5 h-3.5" />
+          </span>
+          <ChevronLeft className="hidden lg:block w-4 h-4 text-zinc-300" />
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <aside className="w-full lg:w-[370px] xl:w-[400px] bg-zinc-900/95 backdrop-blur-xl border-l border-zinc-800 p-4 overflow-y-auto flex flex-col gap-3.5">
+    <aside className="fixed inset-x-2 bottom-16 max-h-[70dvh] rounded-2xl border border-zinc-700/80 shadow-2xl z-30 lg:static lg:inset-auto lg:bottom-auto lg:max-h-none lg:rounded-none lg:border-0 lg:border-l lg:border-zinc-800 lg:shadow-none lg:w-[370px] xl:w-[400px] bg-zinc-900/95 backdrop-blur-xl p-3.5 sm:p-4 overflow-y-auto flex flex-col gap-3.5">
       {/* Navegación guiada en 3 pasos (inspirada en TERRASCOPE) */}
       <div className="bg-zinc-950/90 border border-zinc-800 rounded-2xl p-3.5 space-y-3">
         <div className="flex items-center justify-between gap-2">
@@ -661,9 +691,21 @@ export default function ExaggerationPanel({
             <ArrowLeft className="w-3.5 h-3.5" />
             Volver a casos
           </button>
-          <span className="text-[10px] font-mono uppercase tracking-[0.12em] text-zinc-400">
-            Guía del evento
-          </span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] font-mono uppercase tracking-[0.12em] text-zinc-400">
+              Guía del evento
+            </span>
+            <button
+              type="button"
+              onClick={() => setDrawerOpen(false)}
+              title="Plegar panel"
+              aria-label="Plegar panel de análisis"
+              className="p-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white transition-colors"
+            >
+              <ChevronDown className="w-3.5 h-3.5 lg:hidden" />
+              <ChevronRight className="hidden lg:block w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
 
         <div>

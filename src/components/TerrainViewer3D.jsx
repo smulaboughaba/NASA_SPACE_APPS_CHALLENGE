@@ -5,10 +5,13 @@ import * as THREE from 'three';
 import {
   Activity,
   ArrowLeft,
+  ChevronDown,
+  ChevronUp,
   Columns2,
   Crosshair,
   Eye,
   Film,
+  Info,
   MapPin,
   Minus,
   MoveHorizontal,
@@ -16,6 +19,8 @@ import {
   Radio,
   RotateCcw,
   Sigma,
+  SlidersHorizontal,
+  X,
 } from 'lucide-react';
 import AnimatedStarfield from './AnimatedStarfield';
 import { GIBS_LAYERS, getGibsLayer, getDatasetDailyDates, fetchGibsFrame } from '../utils/gibsLayers';
@@ -972,6 +977,12 @@ export default function TerrainViewer3D({
   const [showLabels, setShowLabels] = useState(true);
   const [zoomCommand, setZoomCommand] = useState({ type: '', nonce: 0 });
   const [fps, setFps] = useState(60);
+  const [controlsOpen, setControlsOpen] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth >= 768 : true
+  );
+  const [layerCardOpen, setLayerCardOpen] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth >= 768 : false
+  );
 
   // ===== Timelapse diario satelital real GIBS (cargado en el navegador) =====
   const gibsLayer = getGibsLayer(gibsLayerId);
@@ -1135,47 +1146,9 @@ export default function TerrainViewer3D({
         />
       </Canvas>
 
-      {/* Ficha de la capa satelital real activa */}
-      {effectiveRenderMode === 'gibs' && (
-        <div className={`pointer-events-none absolute ${compareMode ? 'top-[9.75rem]' : 'top-[7.25rem]'} left-4 z-20 max-w-[330px] bg-zinc-900/90 backdrop-blur-xl border border-zinc-700/80 rounded-xl px-3 py-2 shadow-xl space-y-1.5`}>
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-xs font-semibold text-zinc-100">{gibsLayer.label}</span>
-            <span className="text-[11px] font-mono tabular-nums text-cyan-300">{gibsState.date || '—'}</span>
-          </div>
-          <p className="text-[11px] text-zinc-300 leading-snug">{gibsLayer.description}</p>
-          {gibsLayer.legend && (
-            <div>
-              <div className={`h-2 rounded-full bg-gradient-to-r ${gibsLayer.legend.grad}`} />
-              <div className="flex justify-between text-[10px] text-zinc-400 mt-0.5">
-                <span>{gibsLayer.legend.left}</span>
-                <span>{gibsLayer.legend.right}</span>
-              </div>
-            </div>
-          )}
-          <div className="text-[10px] font-mono text-zinc-400 flex flex-wrap gap-x-2">
-            <span>Satélite WMTS · {gibsLayer.resolution}</span>
-            <span>
-              Días {gibsInfo.loaded}/{gibsInfo.total}
-              {gibsInfo.empty > 0 ? ` · ${gibsInfo.empty} sin datos` : ''}
-            </span>
-            {gibsInfo.nativePx > 0 && <span>{gibsInfo.nativePx} px nativos</span>}
-          </div>
-          {gibsInfo.total > 0 && gibsInfo.loaded === 0 && gibsInfo.empty === gibsInfo.total && (
-            <div className="text-[11px] text-amber-300">Sin datos de esta capa para estas fechas en la zona.</div>
-          )}
-        </div>
-      )}
-
-      {/* Cortinilla Interactiva Arrastrable Antes/Después */}
+      {/* Cortinilla Interactiva Arrastrable Antes/Después (solo línea vertical sobre el canvas) */}
       {compareMode && (
         <div className="pointer-events-none absolute inset-0 overflow-hidden z-10">
-          <div className={`absolute ${effectiveRenderMode === 'gibs' ? 'top-[7.25rem]' : 'top-20'} left-4 bg-zinc-950/90 border border-zinc-700 rounded-lg px-3 py-1 text-[11px] font-mono text-zinc-200 shadow-lg`}>
-            Antes · {effectiveRenderMode === 'gibs' ? gibsState.preDate || preDate : preDate}
-          </div>
-          <div className={`absolute ${effectiveRenderMode === 'gibs' ? 'top-[7.25rem]' : 'top-20'} right-4 bg-zinc-950/90 border border-zinc-700 rounded-lg px-3 py-1 text-[11px] font-mono text-zinc-100 shadow-lg`}>
-            Después · {effectiveRenderMode === 'gibs' ? gibsState.date : status.interpolatedDate}
-          </div>
-
           <div
             className="absolute top-0 bottom-0 -translate-x-1/2 pointer-events-auto cursor-ew-resize group"
             style={{ left: `${safeSplit * 100}%` }}
@@ -1193,114 +1166,211 @@ export default function TerrainViewer3D({
         </div>
       )}
 
-      {/* Barra Superior Flotante */}
-      <div className="pointer-events-none absolute top-4 left-4 right-4 z-20 flex flex-col gap-2">
-        <div className="flex flex-wrap items-center justify-between gap-2.5">
-        <div className="pointer-events-auto flex items-center gap-2.5">
-          <button
-            onClick={onBackToGlobe}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-zinc-900/90 backdrop-blur-xl hover:bg-zinc-800 border border-zinc-700/80 hover:border-zinc-500 text-xs font-medium text-zinc-100 transition-all shadow-xl"
-          >
-            <ArrowLeft className="w-3.5 h-3.5 text-zinc-300" />
-            Globo
-          </button>
+      {/* Barra Superior Flotante Única (en flujo flex-col para cero solapamientos en móvil y escritorio) */}
+      <div className="pointer-events-none absolute top-2.5 sm:top-4 left-2.5 right-2.5 sm:left-4 sm:right-4 z-20 flex flex-col gap-2">
+        {/* Fila 1: Navegación + Título + Toggle plegable de menú */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="pointer-events-auto flex items-center gap-2 min-w-0">
+            <button
+              onClick={onBackToGlobe}
+              className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-zinc-900/90 backdrop-blur-xl hover:bg-zinc-800 border border-zinc-700/80 hover:border-zinc-500 text-xs font-medium text-zinc-100 transition-all shadow-xl shrink-0"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 text-zinc-300" />
+              <span className="hidden xs:inline sm:inline">Globo</span>
+            </button>
 
-          <div className="bg-zinc-900/90 backdrop-blur-xl border border-zinc-700/80 rounded-xl px-3.5 py-2 shadow-xl">
-            <div className="text-xs font-semibold text-zinc-100 leading-tight">{dataset.titulo}</div>
-            <div className="text-[11px] font-mono tabular-nums text-zinc-400 mt-0.5">
-              {dataset.sensor} · DEM {dataset.elev_range_m?.[0] ?? 0}–{dataset.elev_range_m?.[1] ?? 0} m · Texturas HD
+            <div className="bg-zinc-900/90 backdrop-blur-xl border border-zinc-700/80 rounded-xl px-2.5 sm:px-3.5 py-1.5 sm:py-2 shadow-xl min-w-0 max-w-[175px] sm:max-w-[280px] md:max-w-md">
+              <div className="text-[11px] sm:text-xs font-semibold text-zinc-100 leading-tight truncate">{dataset.titulo}</div>
+              <div className="hidden md:block text-[11px] font-mono tabular-nums text-zinc-400 mt-0.5 truncate">
+                {dataset.sensor} · DEM {dataset.elev_range_m?.[0] ?? 0}–{dataset.elev_range_m?.[1] ?? 0} m · Texturas HD
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Selector de Modos Visuales + Etiquetas + Comparador */}
-        <div className="pointer-events-auto flex flex-wrap items-center gap-2">
-          <div className="bg-zinc-900/90 backdrop-blur-xl border border-zinc-700/80 p-1 rounded-xl flex flex-wrap items-center gap-1 shadow-xl">
+          <div className="pointer-events-auto flex items-center gap-1.5 shrink-0">
+            {/* En escritorio cuando está expandido muestra el selector inline; botón plegable siempre accesible */}
             <button
-              onClick={() => selectRenderMode('gibs')}
-              title="Observación satelital real día a día (MODIS, VIIRS, GPM IMERG, SMAP, OMI, AIRS, OCO-2)"
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs transition-all ${
-                effectiveRenderMode === 'gibs' ? 'bg-zinc-100 text-zinc-950 font-semibold shadow-sm' : 'text-zinc-300 hover:text-white'
+              type="button"
+              onClick={() => setControlsOpen((v) => !v)}
+              aria-expanded={controlsOpen}
+              className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl border backdrop-blur-xl text-xs transition-all shadow-xl ${
+                controlsOpen
+                  ? 'bg-zinc-800/95 border-cyan-400/50 text-cyan-200 font-medium'
+                  : 'bg-zinc-900/90 border-zinc-700/80 text-zinc-200 hover:border-zinc-500 font-medium'
               }`}
             >
-              <Eye className="w-3.5 h-3.5" />
-              Vista Satélite
-            </button>
-            <button
-              onClick={() => selectRenderMode('hybrid')}
-              title="Modelo físico 3D sobre el relieve (frente de fuego, lámina de inundación o deformación sísmica)"
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs transition-all ${
-                effectiveRenderMode === 'hybrid' ? 'bg-zinc-100 text-zinc-950 font-semibold shadow-sm' : 'text-zinc-300 hover:text-white'
-              }`}
-            >
-              <Film className="w-3.5 h-3.5" />
-              Simulación
-            </button>
-            <button
-              onClick={() => selectRenderMode('driver')}
-              title="Mapa espacial estimado de la variable secundaria (térmica, esfuerzo o lluvia)"
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs transition-all ${
-                effectiveRenderMode === 'driver' ? 'bg-zinc-100 text-zinc-950 font-semibold shadow-sm' : 'text-zinc-300 hover:text-white'
-              }`}
-            >
-              <Activity className="w-3.5 h-3.5" />
-              Variable Cruzada
+              <SlidersHorizontal className="w-3.5 h-3.5 text-cyan-300 shrink-0" />
+              <span className="truncate max-w-[115px] sm:max-w-none">
+                {effectiveRenderMode === 'gibs' ? gibsLayer.short : effectiveRenderMode === 'hybrid' ? 'Simulación' : 'Var. Cruzada'}
+              </span>
+              {controlsOpen ? <ChevronUp className="w-3.5 h-3.5 shrink-0" /> : <ChevronDown className="w-3.5 h-3.5 shrink-0" />}
             </button>
           </div>
-
-          <button
-            onClick={() => setShowLabels((v) => !v)}
-            className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border backdrop-blur-xl text-xs transition-all shadow-xl ${
-              showLabels
-                ? 'bg-zinc-800/95 border-zinc-500 text-zinc-100 font-medium'
-                : 'bg-zinc-900/90 border-zinc-700/80 text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            <MapPin className="w-3.5 h-3.5" />
-            Etiquetas
-          </button>
-
-          <button
-            onClick={() => setCompareMode((v) => !v)}
-            className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border backdrop-blur-xl text-xs transition-all shadow-xl ${
-              compareMode
-                ? 'bg-zinc-100 border-zinc-100 text-zinc-950 font-semibold'
-                : 'bg-zinc-900/90 border-zinc-700/80 text-zinc-200 hover:border-zinc-500 hover:text-white font-medium'
-            }`}
-          >
-            <Columns2 className="w-3.5 h-3.5" />
-            {compareMode ? 'Comparador activo' : 'Antes/Después'}
-          </button>
-        </div>
         </div>
 
-        {/* Píldoras rápidas de todas las capas satelitales reales GIBS */}
-        {effectiveRenderMode === 'gibs' && (
-          <div className="pointer-events-auto flex items-center gap-1.5 overflow-x-auto bg-zinc-900/90 backdrop-blur-xl border border-zinc-700/80 rounded-xl px-2 py-1.5 shadow-xl">
-            {GIBS_LAYERS.map((l) => {
-              const active = gibsLayer.id === l.id;
-              return (
+        {/* Panel Plegable de Modos, Toggles y 13 Capas Satelitales */}
+        {controlsOpen && (
+          <div className="pointer-events-auto flex flex-col gap-2 bg-zinc-950/85 md:bg-transparent backdrop-blur-xl md:backdrop-blur-none border border-white/10 md:border-0 rounded-2xl md:rounded-none p-2.5 md:p-0 shadow-2xl md:shadow-none max-h-[54dvh] md:max-h-none overflow-y-auto md:overflow-visible">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="bg-zinc-900/90 backdrop-blur-xl border border-zinc-700/80 p-1 rounded-xl flex flex-wrap items-center gap-1 shadow-xl w-full sm:w-auto">
                 <button
-                  key={l.id}
-                  type="button"
-                  onClick={() => setGibsLayerId?.(l.id)}
-                  title={`${l.label} (${l.resolution})`}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] whitespace-nowrap transition-all border ${
-                    active
-                      ? 'bg-cyan-400 text-zinc-950 border-cyan-300 font-semibold shadow-sm'
-                      : 'bg-zinc-950/75 text-zinc-300 border-zinc-800 hover:border-zinc-600 hover:text-white'
+                  onClick={() => selectRenderMode('gibs')}
+                  title="Observación satelital real día a día (MODIS, VIIRS, GPM IMERG, SMAP, OMI, AIRS, OCO-2)"
+                  className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] sm:text-xs transition-all ${
+                    effectiveRenderMode === 'gibs' ? 'bg-zinc-100 text-zinc-950 font-semibold shadow-sm' : 'text-zinc-300 hover:text-white'
                   }`}
                 >
-                  {l.short}
+                  <Eye className="w-3.5 h-3.5 shrink-0" />
+                  Vista Satélite
                 </button>
-              );
-            })}
+                <button
+                  onClick={() => selectRenderMode('hybrid')}
+                  title="Modelo físico 3D sobre el relieve (frente de fuego, lámina de inundación o deformación sísmica)"
+                  className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] sm:text-xs transition-all ${
+                    effectiveRenderMode === 'hybrid' ? 'bg-zinc-100 text-zinc-950 font-semibold shadow-sm' : 'text-zinc-300 hover:text-white'
+                  }`}
+                >
+                  <Film className="w-3.5 h-3.5 shrink-0" />
+                  Simulación
+                </button>
+                <button
+                  onClick={() => selectRenderMode('driver')}
+                  title="Mapa espacial estimado de la variable secundaria (térmica, esfuerzo o lluvia)"
+                  className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] sm:text-xs transition-all ${
+                    effectiveRenderMode === 'driver' ? 'bg-zinc-100 text-zinc-950 font-semibold shadow-sm' : 'text-zinc-300 hover:text-white'
+                  }`}
+                >
+                  <Activity className="w-3.5 h-3.5 shrink-0" />
+                  <span className="sm:hidden">Cruzada</span>
+                  <span className="hidden sm:inline">Variable Cruzada</span>
+                </button>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
+                <button
+                  onClick={() => setShowLabels((v) => !v)}
+                  className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl border backdrop-blur-xl text-[11px] sm:text-xs transition-all shadow-xl ${
+                    showLabels
+                      ? 'bg-zinc-800/95 border-zinc-500 text-zinc-100 font-medium'
+                      : 'bg-zinc-900/90 border-zinc-700/80 text-zinc-400 hover:text-zinc-200'
+                  }`}
+                >
+                  <MapPin className="w-3.5 h-3.5" />
+                  Etiquetas
+                </button>
+
+                <button
+                  onClick={() => setCompareMode((v) => !v)}
+                  className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl border backdrop-blur-xl text-[11px] sm:text-xs transition-all shadow-xl ${
+                    compareMode
+                      ? 'bg-zinc-100 border-zinc-100 text-zinc-950 font-semibold'
+                      : 'bg-zinc-900/90 border-zinc-700/80 text-zinc-200 hover:border-zinc-500 hover:text-white font-medium'
+                  }`}
+                >
+                  <Columns2 className="w-3.5 h-3.5" />
+                  {compareMode ? 'Comparador' : 'Antes/Después'}
+                </button>
+
+                {effectiveRenderMode === 'gibs' && (
+                  <button
+                    type="button"
+                    onClick={() => setLayerCardOpen((v) => !v)}
+                    title="Mostrar u ocultar ficha de capa satelital"
+                    className={`inline-flex items-center gap-1 px-2.5 py-1.5 sm:py-2 rounded-xl border backdrop-blur-xl text-[11px] sm:text-xs transition-all shadow-xl ${
+                      layerCardOpen
+                        ? 'bg-cyan-400/15 border-cyan-400/50 text-cyan-200 font-medium'
+                        : 'bg-zinc-900/90 border-zinc-700/80 text-zinc-300 hover:text-white'
+                    }`}
+                  >
+                    <Info className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Leyenda</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Píldoras rápidas de las 13 capas satelitales reales GIBS */}
+            {effectiveRenderMode === 'gibs' && (
+              <div className="flex flex-wrap md:flex-nowrap items-center gap-1.5 md:overflow-x-auto bg-zinc-900/90 backdrop-blur-xl border border-zinc-700/80 rounded-xl px-2 py-1.5 shadow-xl">
+                {GIBS_LAYERS.map((l) => {
+                  const active = gibsLayer.id === l.id;
+                  return (
+                    <button
+                      key={l.id}
+                      type="button"
+                      onClick={() => setGibsLayerId?.(l.id)}
+                      title={`${l.label} (${l.resolution})`}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] whitespace-nowrap transition-all border ${
+                        active
+                          ? 'bg-cyan-400 text-zinc-950 border-cyan-300 font-semibold shadow-sm'
+                          : 'bg-zinc-950/75 text-zinc-300 border-zinc-800 hover:border-zinc-600 hover:text-white'
+                      }`}
+                    >
+                      {l.short}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Badges de Cortinilla Antes/Después en el flujo normal */}
+        {compareMode && (
+          <div className="flex items-center justify-between gap-2">
+            <div className="bg-zinc-950/90 border border-zinc-700 rounded-lg px-2.5 sm:px-3 py-1 text-[10px] sm:text-[11px] font-mono text-zinc-200 shadow-lg">
+              Antes · {effectiveRenderMode === 'gibs' ? gibsState.preDate || preDate : preDate}
+            </div>
+            <div className="bg-zinc-950/90 border border-zinc-700 rounded-lg px-2.5 sm:px-3 py-1 text-[10px] sm:text-[11px] font-mono text-zinc-100 shadow-lg">
+              Después · {effectiveRenderMode === 'gibs' ? gibsState.date : status.interpolatedDate}
+            </div>
+          </div>
+        )}
+
+        {/* Ficha plegable de la capa satelital real activa */}
+        {effectiveRenderMode === 'gibs' && layerCardOpen && (
+          <div className="pointer-events-auto max-w-[330px] bg-zinc-900/90 backdrop-blur-xl border border-zinc-700/80 rounded-xl px-3 py-2 shadow-xl space-y-1.5">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs font-semibold text-zinc-100 truncate">{gibsLayer.label}</span>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className="text-[11px] font-mono tabular-nums text-cyan-300">{gibsState.date || '—'}</span>
+                <button
+                  type="button"
+                  onClick={() => setLayerCardOpen(false)}
+                  aria-label="Cerrar leyenda de capa"
+                  className="p-0.5 rounded text-zinc-400 hover:text-white hover:bg-white/10"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+            <p className="text-[11px] text-zinc-300 leading-snug">{gibsLayer.description}</p>
+            {gibsLayer.legend && (
+              <div>
+                <div className={`h-2 rounded-full bg-gradient-to-r ${gibsLayer.legend.grad}`} />
+                <div className="flex justify-between text-[10px] text-zinc-400 mt-0.5">
+                  <span>{gibsLayer.legend.left}</span>
+                  <span>{gibsLayer.legend.right}</span>
+                </div>
+              </div>
+            )}
+            <div className="text-[10px] font-mono text-zinc-400 flex flex-wrap gap-x-2">
+              <span>Satélite WMTS · {gibsLayer.resolution}</span>
+              <span>
+                Días {gibsInfo.loaded}/{gibsInfo.total}
+                {gibsInfo.empty > 0 ? ` · ${gibsInfo.empty} sin datos` : ''}
+              </span>
+              {gibsInfo.nativePx > 0 && <span>{gibsInfo.nativePx} px nativos</span>}
+            </div>
+            {gibsInfo.total > 0 && gibsInfo.loaded === 0 && gibsInfo.empty === gibsInfo.total && (
+              <div className="text-[11px] text-amber-300">Sin datos de esta capa para estas fechas en la zona.</div>
+            )}
           </div>
         )}
       </div>
 
       {/* Botones de zoom de cámara (+, -, Restablecer) */}
-      <div className="absolute bottom-3 right-4 z-20 flex flex-col gap-1.5">
+      <div className="absolute bottom-3 right-3 sm:right-4 z-20 flex flex-col gap-1.5">
         <button
           onClick={() => setZoomCommand((z) => ({ type: 'in', nonce: z.nonce + 1 }))}
           title="Acercar terreno"
@@ -1325,9 +1395,9 @@ export default function TerrainViewer3D({
       </div>
 
       {/* Telemetry HUD compacto sincronizado con TimelineControl inferior */}
-      <div className="pointer-events-none absolute bottom-3 left-4 right-16 z-20 flex flex-wrap items-end justify-between gap-2">
-        <div className="pointer-events-auto bg-zinc-900/90 backdrop-blur-xl border border-zinc-700/80 rounded-xl px-3 py-1.5 shadow-xl flex flex-wrap items-center gap-2.5">
-          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-zinc-950 border border-zinc-700 text-[10px] font-mono tabular-nums text-zinc-200">
+      <div className="pointer-events-none absolute bottom-3 left-3 right-14 sm:left-4 sm:right-16 z-20 flex flex-wrap items-end justify-between gap-2">
+        <div className="pointer-events-auto bg-zinc-900/90 backdrop-blur-xl border border-zinc-700/80 rounded-xl px-2.5 sm:px-3 py-1 sm:py-1.5 shadow-xl flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-0.5 rounded-md bg-zinc-950 border border-zinc-700 text-[10px] font-mono tabular-nums text-zinc-200">
             <Radio className="w-3 h-3 text-emerald-400" />
             {fps} FPS
           </span>
@@ -1337,7 +1407,7 @@ export default function TerrainViewer3D({
               <>
                 <span className="text-zinc-600">·</span>
                 <span className="text-emerald-300 font-semibold">
-                  {impactSummary.transformedPct.toFixed(1)}% sup. ({impactSummary.transformedKm2.toFixed(1)} km²)
+                  {impactSummary.transformedPct.toFixed(1)}% ({impactSummary.transformedKm2.toFixed(1)} km²)
                 </span>
                 <span className="hidden sm:inline text-zinc-600">·</span>
                 <span className="hidden sm:inline text-cyan-300">{impactSummary.spatialShiftValue}</span>

@@ -1,30 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { Calendar, Compass, MapPin } from 'lucide-react';
+import { Calendar, ChevronDown, ChevronUp, Compass, MapPin } from 'lucide-react';
 import { getCopy } from '../utils/i18n';
-
-function haversineKm(lat1, lon1, lat2, lon2) {
-  const R = 6371;
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
-function buildRegionalBbox(lat, lon, widthKm = 36) {
-  const halfLat = (widthKm / 2) / 111.32;
-  const cosLat = Math.max(0.25, Math.cos((lat * Math.PI) / 180));
-  const halfLon = (widthKm / 2) / (111.32 * cosLat);
-  return [
-    Number((lon - halfLon).toFixed(4)),
-    Number(Math.max(-82, lat - halfLat).toFixed(4)),
-    Number((lon + halfLon).toFixed(4)),
-    Number(Math.min(82, lat + halfLat).toFixed(4)),
-  ];
-}
+import { buildRegionalBbox, haversineKm } from '../utils/searchEngine';
 
 export default function OrbitalGlobe({
   scenarios = [],
@@ -46,7 +25,10 @@ export default function OrbitalGlobe({
   draftZoneRef.current = draftZone;
   onUpdateDraftZoneRef.current = onUpdateDraftZone;
 
-  const [topic] = useState('hydrology'); // la escena 3D muestra todas las capas; el tema solo guía la simulación secundaria
+  const topic = draftZone?.topic || 'hydrology';
+  const [panelOpen, setPanelOpen] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth >= 640 : true
+  );
   const [viewInfo, setViewInfo] = useState({
     lat: draftZone?.lat ?? 39.4,
     lon: draftZone?.lon ?? -0.35,
@@ -226,6 +208,9 @@ export default function OrbitalGlobe({
       label: placeLabel ? placeLabel : `Zona ${targetLat.toFixed(2)}°, ${targetLon.toFixed(2)}°`,
       startDate,
       endDate,
+      start_date: startDate,
+      end_date: endDate,
+      preferredGibsLayer: draftZone?.preferredGibsLayer || 'truecolor',
     });
   };
 
@@ -241,14 +226,39 @@ export default function OrbitalGlobe({
         </div>
       </div>
 
-      {/* Panel derecho únicamente: el lado izquierdo queda totalmente despejado (búsqueda en Modo Buscador) */}
-      <div className="pointer-events-none absolute top-20 left-4 right-4 z-20 flex justify-end">
-        <div className="pointer-events-auto bg-zinc-900/85 backdrop-blur-xl border border-white/10 rounded-2xl px-4 py-3.5 shadow-2xl w-full sm:w-80 space-y-2.5">
-          {placeLabel && (
-            <div className="text-xs font-semibold text-zinc-100 truncate border-b border-white/10 pb-2">
-              {placeLabel}
+      {/* Panel derecho plegable: en móvil arranca plegado para dejar visible el globo y la mira */}
+      <div className="pointer-events-none absolute top-16 sm:top-20 left-3 right-3 sm:left-4 sm:right-4 z-20 flex flex-col items-end gap-2">
+        {!panelOpen ? (
+          <button
+            type="button"
+            onClick={() => setPanelOpen(true)}
+            className="pointer-events-auto inline-flex items-center gap-2 bg-zinc-900/85 backdrop-blur-xl border border-white/15 hover:border-cyan-400/50 rounded-full px-3.5 py-2 text-xs text-zinc-100 shadow-2xl transition-colors"
+          >
+            <Compass className="w-3.5 h-3.5 text-cyan-300" />
+            <span className="font-mono tabular-nums">{viewInfo.lat}°, {viewInfo.lon}°</span>
+            <span className="text-zinc-500">·</span>
+            <span className="text-cyan-300 font-medium">{boxKm} km</span>
+            <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
+          </button>
+        ) : (
+        <div className="pointer-events-auto bg-zinc-900/90 backdrop-blur-xl border border-white/10 rounded-2xl px-4 py-3.5 shadow-2xl w-full sm:w-80 max-h-[calc(100dvh-10rem)] overflow-y-auto space-y-2.5">
+          <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-2">
+            <div className="min-w-0">
+              {placeLabel ? (
+                <div className="text-xs font-semibold text-zinc-100 truncate">{placeLabel}</div>
+              ) : (
+                <div className="text-[11px] font-mono text-zinc-400">{t.regionDefault}</div>
+              )}
             </div>
-          )}
+            <button
+              type="button"
+              onClick={() => setPanelOpen(false)}
+              title="Plegar panel"
+              className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-white/5 transition-colors shrink-0"
+            >
+              <ChevronUp className="w-3.5 h-3.5" />
+            </button>
+          </div>
           <div className="flex items-center justify-between text-[11px] font-mono tabular-nums text-zinc-300">
             <span className="inline-flex items-center gap-1 text-zinc-100 font-semibold">
               <Compass className="w-3.5 h-3.5 text-cyan-300" />
@@ -324,20 +334,21 @@ export default function OrbitalGlobe({
             {t.analyze3d}
           </button>
         </div>
+        )}
       </div>
 
       {/* Barra inferior: Casos demostrativos con fechas históricas exactas */}
-      <div className="pointer-events-none absolute bottom-4 left-4 right-14 z-20 flex flex-wrap items-center justify-between gap-2">
-        <div className="pointer-events-auto flex flex-wrap items-center gap-1.5 bg-zinc-900/85 backdrop-blur-xl border border-white/10 rounded-2xl px-3 py-2 shadow-xl">
-          <span className="text-[11px] font-mono text-zinc-400 mr-1">{t.demoCases}</span>
+      <div className="pointer-events-none absolute bottom-3 sm:bottom-4 left-3 right-16 sm:left-4 sm:right-16 z-20 flex items-center justify-between gap-2">
+        <div className="pointer-events-auto flex items-center gap-1.5 overflow-x-auto max-w-full bg-zinc-900/85 backdrop-blur-xl border border-white/10 rounded-2xl px-2.5 sm:px-3 py-1.5 sm:py-2 shadow-xl">
+          <span className="hidden sm:inline text-[11px] font-mono text-zinc-400 mr-1 whitespace-nowrap">{t.demoCases}</span>
           {scenarios.map((sc) => (
             <button
               key={sc.id}
               type="button"
               onClick={() => onEnterTerrain?.(sc.id)}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-zinc-950 hover:bg-zinc-800 border border-zinc-700 text-xs text-zinc-100 transition-colors"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-zinc-950 hover:bg-zinc-800 border border-zinc-700 text-[11px] sm:text-xs text-zinc-100 whitespace-nowrap transition-colors shrink-0"
             >
-              <MapPin className="w-3 h-3" style={{ color: sc.beaconColor }} />
+              <MapPin className="w-3 h-3 shrink-0" style={{ color: sc.beaconColor }} />
               {sc.shortLabel}
             </button>
           ))}
