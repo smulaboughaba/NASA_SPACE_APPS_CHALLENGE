@@ -5,10 +5,37 @@ import TerrainViewer3D from './components/TerrainViewer3D';
 import TimelineControl from './components/TimelineControl';
 import ExaggerationPanel from './components/ExaggerationPanel';
 import StoryModeTour from './components/StoryModeTour';
+import TopShellBar, { ModeSwitchPill, TopRightUtilities } from './components/TopShellBar';
+import LandingHero from './components/LandingHero';
+import AgentModePreview from './components/AgentModePreview';
+import InteractiveStarfieldBg from './components/InteractiveStarfieldBg';
 import { computeInterpolatedBuffers } from './utils/sarMath';
 import { analyzeZoneClientSide } from './utils/liveZoneClient';
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
+const SETTINGS_KEY = 'geowave.settings.v1';
+
+const formatDateOffset = (daysAgo) => {
+  const d = new Date(Date.now() - daysAgo * 86400 * 1000);
+  return d.toISOString().slice(0, 10);
+};
+
+const loadStoredSettings = () => {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return {
+        lang: parsed?.lang === 'en' ? 'en' : 'es',
+        dataSourceMode: ['auto', 'web', 'local'].includes(parsed?.dataSourceMode) ? parsed.dataSourceMode : 'auto',
+        defaultRangeDays: [30, 60, 90].includes(Number(parsed?.defaultRangeDays)) ? Number(parsed.defaultRangeDays) : 60,
+      };
+    }
+  } catch {
+    // fallback silencioso
+  }
+  return { lang: 'es', dataSourceMode: 'auto', defaultRangeDays: 60 };
+};
 
 const SCENARIOS = [
   {
@@ -95,7 +122,24 @@ class AppErrorBoundary extends React.Component {
 }
 
 function AppContent() {
-  const [viewMode, setViewMode] = useState('globe'); // 'globe' | 'terrain'
+  const [settings, setSettings] = useState(loadStoredSettings);
+  const [activeMode, setActiveMode] = useState('search'); // 'search' | 'earth_engine' | 'agent'
+  const [viewMode, setViewMode] = useState('globe'); // 'globe' | 'terrain' (dentro de earth_engine)
+  const [globeMounted, setGlobeMounted] = useState(false);
+  const [apiMode, setApiMode] = useState(null); // null | 'local' | 'web'
+  const [draftZone, setDraftZone] = useState(() => ({
+    query: '',
+    placeLabel: '',
+    lat: 39.4,
+    lon: -0.35,
+    searchedCoords: null,
+    globeCamera: { center: [-12, 34], zoom: 2.35, pitch: 24, bearing: 0 },
+    boxKm: 36,
+    startDate: formatDateOffset(loadStoredSettings().defaultRangeDays + 2),
+    endDate: formatDateOffset(2),
+    flyNonce: 0,
+  }));
+
   const [activeScenarioId, setActiveScenarioId] = useState('la_fires');
   const [datasetCache, setDatasetCache] = useState({});
   const [loading, setLoading] = useState(false);
@@ -130,6 +174,56 @@ function AppContent() {
     tFloatRef.current = tFloat;
   }, [tFloat]);
 
+  const updateSettings = (patch) => {
+    setSettings((prev) => {
+      const next = { ...prev, ...patch };
+      try {
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify(next));
+      } catch {
+        // ignore storage quota errors
+      }
+      if (patch?.defaultRangeDays && patch.defaultRangeDays !== prev.defaultRangeDays) {
+        setDraftZone((dz) => ({
+          ...dz,
+          startDate: formatDateOffset(patch.defaultRangeDays + 2),
+          endDate: formatDateOffset(2),
+        }));
+      }
+      return next;
+    });
+  };
+
+  const updateDraftZone = (patch) => {
+    setDraftZone((prev) => ({ ...prev, ...patch }));
+  };
+
+  // Comprueba conectividad API de forma centralizada (en web/Netlify evita /api/health innecesario)
+  useEffect(() => {
+    let active = true;
+    if (settings.dataSourceMode === 'web' || (!import.meta.env.DEV && !API_BASE && settings.dataSourceMode === 'auto')) {
+      setApiMode('web');
+      return () => {
+        active = false;
+      };
+    }
+    setApiMode(null);
+    fetch(`${API_BASE}/api/health`)
+      .then(async (r) => {
+        const ct = r.headers.get('content-type') || '';
+        if (!r.ok || !ct.includes('application/json')) return null;
+        return r.json();
+      })
+      .then((d) => {
+        if (active) setApiMode(d?.ok ? 'local' : 'web');
+      })
+      .catch(() => {
+        if (active) setApiMode('web');
+      });
+    return () => {
+      active = false;
+    };
+  }, [settings.dataSourceMode]);
+
   const activeMeta = useMemo(
     () => SCENARIOS.find((s) => s.id === activeScenarioId) || SCENARIOS[0],
     [activeScenarioId]
@@ -151,6 +245,7 @@ function AppContent() {
     setFocusSubzone((prev) => ({ id: 'all', lat: null, lon: null, nonce: prev.nonce + 1 }));
 
     if (datasetCache[meta.id]) {
+      setActiveMode('earth_engine');
       setViewMode('terrain');
       return;
     }
@@ -166,6 +261,7 @@ function AppContent() {
         throw new Error(`Dataset inválido o incompleto para ${meta.label}`);
       }
       setDatasetCache((prev) => ({ ...prev, [meta.id]: data }));
+      setActiveMode('earth_engine');
       setViewMode('terrain');
     } catch (err) {
       console.error('Error cargando dataset pre-horneado:', err);
@@ -179,7 +275,8 @@ function AppContent() {
     setLiveError('');
     try {
       let data = null;
-      if (import.meta.env.DEV || API_BASE) {
+      const allowLocal = settings.dataSourceMode !== 'web' && (import.meta.env.DEV || API_BASE);
+      if (allowLocal) {
         try {
           const res = await fetch(`${API_BASE}/api/analyze-zone`, {
             method: 'POST',
@@ -216,6 +313,7 @@ function AppContent() {
       setStoryModeActive(false);
       setActiveStep(1);
       setFocusSubzone((prev) => ({ id: 'all', lat: null, lon: null, nonce: prev.nonce + 1 }));
+      setActiveMode('earth_engine');
       setViewMode('terrain');
     } catch (err) {
       setLiveError(err?.message || 'Error consultando Live API');
@@ -310,9 +408,38 @@ function AppContent() {
     setTFloat(nextVal);
   };
 
+  const handleModeChange = (nextMode) => {
+    if (nextMode === 'earth_engine' && viewMode === 'globe') {
+      setGlobeMounted(true);
+    }
+    if (nextMode !== 'earth_engine') {
+      setIsPlaying(false);
+      setStoryModeActive(false);
+    }
+    setActiveMode(nextMode);
+  };
+
+  const handleSelectSearchLocation = (loc) => {
+    setDraftZone((prev) => ({
+      ...prev,
+      query: loc.query || loc.label,
+      placeLabel: loc.label,
+      lat: loc.lat,
+      lon: loc.lon,
+      searchedCoords: { lat: loc.lat, lon: loc.lon },
+      globeCamera: { center: [loc.lon, loc.lat], zoom: 10.8, pitch: 54, bearing: 0 },
+      flyNonce: (prev.flyNonce || 0) + 1,
+    }));
+    setGlobeMounted(true);
+    setActiveMode('earth_engine');
+    setViewMode('globe');
+  };
+
   const handleBackToGlobe = () => {
     setIsPlaying(false);
     setStoryModeActive(false);
+    setGlobeMounted(true);
+    setActiveMode('earth_engine');
     setViewMode('globe');
   };
 
@@ -358,41 +485,119 @@ function AppContent() {
     }));
   };
 
+  const loadingOverlay = loading && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+      <div className="bg-zinc-900 border border-zinc-700 rounded-2xl px-5 py-3.5 flex items-center gap-3 text-sm font-medium text-zinc-100 shadow-2xl">
+        <Loader2 className="w-4 h-4 animate-spin text-zinc-300" />
+        Cargando relieve 3D y series satelitales...
+      </div>
+    </div>
+  );
+
+  const spaceShellBackdrop =
+    'radial-gradient(ellipse 75% 60% at 50% 42%, #131924 0%, #090c12 52%, #05070b 100%)';
+
   if (viewMode === 'globe') {
     return (
-      <div className="relative w-screen h-screen bg-[#050508]">
-        <OrbitalGlobe
-          scenarios={SCENARIOS}
-          onEnterTerrain={loadScenario}
-          onAnalyzeZone={analyzeCustomZone}
-          liveError={liveError}
+      <div
+        className="relative w-screen h-screen overflow-hidden"
+        style={{ background: spaceShellBackdrop }}
+      >
+        <InteractiveStarfieldBg active={activeMode !== 'earth_engine'} />
+
+        <TopShellBar
+          activeMode={activeMode}
+          onChangeMode={handleModeChange}
+          settings={settings}
+          onUpdateSettings={updateSettings}
+          apiMode={apiMode}
+          showLeftBrand={activeMode !== 'search'}
+          showApiBadge={activeMode !== 'search'}
         />
-        {loading && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-            <div className="bg-zinc-900 border border-zinc-700 rounded-2xl px-5 py-3.5 flex items-center gap-3 text-sm font-medium text-zinc-100 shadow-2xl">
-              <Loader2 className="w-4 h-4 animate-spin text-zinc-300" />
-              Cargando relieve 3D y series satelitales...
+
+        {/* Capa 1: Portada (Modo Buscador) */}
+        <section
+          aria-hidden={activeMode !== 'search'}
+          className={`absolute inset-0 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+            activeMode === 'search'
+              ? 'opacity-100 scale-100 translate-y-0 z-10 visible'
+              : 'opacity-0 scale-[0.985] -translate-y-2 pointer-events-none z-0 invisible'
+          }`}
+        >
+          <LandingHero
+            scenarios={SCENARIOS}
+            lang={settings.lang}
+            apiMode={apiMode}
+            initialQuery={draftZone.query}
+            onSelectLocation={handleSelectSearchLocation}
+            onEnterScenario={loadScenario}
+          />
+        </section>
+
+        {/* Capa 2: Modo Earth Engine (Globo 3D) */}
+        <section
+          aria-hidden={activeMode !== 'earth_engine'}
+          className={`absolute inset-0 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+            activeMode === 'earth_engine'
+              ? 'opacity-100 scale-100 z-10 visible'
+              : 'opacity-0 scale-[0.985] pointer-events-none z-0 invisible'
+          }`}
+        >
+          {globeMounted && (
+            <div className="w-full h-full animate-geowave-in">
+              <OrbitalGlobe
+                scenarios={SCENARIOS}
+                onEnterTerrain={loadScenario}
+                onAnalyzeZone={analyzeCustomZone}
+                liveError={liveError}
+                draftZone={draftZone}
+                onUpdateDraftZone={updateDraftZone}
+                lang={settings.lang}
+              />
             </div>
-          </div>
-        )}
+          )}
+        </section>
+
+        {/* Capa 3: Agent Mode */}
+        <section
+          aria-hidden={activeMode !== 'agent'}
+          className={`absolute inset-0 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+            activeMode === 'agent'
+              ? 'opacity-100 scale-100 translate-y-0 z-10 visible'
+              : 'opacity-0 scale-[0.985] translate-y-2 pointer-events-none z-0 invisible'
+          }`}
+        >
+          <AgentModePreview
+            lang={settings.lang}
+            draftZone={draftZone}
+            activeDatasetTitle={dataset?.titulo}
+            onGoSearch={() => handleModeChange('search')}
+            onGoEarthEngine={() => handleModeChange('earth_engine')}
+          />
+        </section>
+
+        {loadingOverlay}
       </div>
     );
   }
 
   return (
-    <div className="w-screen h-screen bg-[#050508] flex flex-col overflow-hidden">
-      {/* Cabecera Superior Minimalista */}
-      <header className="min-h-[52px] bg-zinc-900/95 backdrop-blur-xl border-b border-zinc-800 px-4 py-2 flex flex-wrap items-center justify-between gap-2.5 shrink-0">
-        <div className="flex items-center gap-3.5">
-          <div className="flex items-center gap-2.5 text-zinc-100 text-xs font-semibold tracking-tight">
+    <div className="relative w-screen h-screen bg-[#050508] flex flex-col overflow-hidden">
+      {/* Cabecera Superior Minimalista con Switch integrado y solo icono en esquina izquierda */}
+      <header className="min-h-[52px] bg-zinc-900/95 backdrop-blur-xl border-b border-zinc-800 px-4 py-2 flex flex-wrap items-center justify-between gap-2.5 shrink-0 z-30">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => handleModeChange('search')}
+            title="GEO-WAVE"
+            className="inline-flex items-center justify-center w-8 h-8 rounded-xl hover:bg-white/5 transition-colors shrink-0"
+          >
             <img
-              src="/assets/geo-wave-logo.png"
+              src="/assets/geo-wave-icon-light.png"
               alt="GEO-WAVE"
-              className="w-7 h-7 rounded-lg bg-white/95 p-0.5 object-contain shadow-sm shrink-0"
+              className="w-7 h-7 object-contain"
             />
-            <span className="tracking-wide font-bold">GEO-WAVE</span>
-            <span className="hidden sm:inline text-zinc-400 font-mono font-normal text-[11px]">· Observación Satelital 3D</span>
-          </div>
+          </button>
 
           <nav className="hidden md:flex items-center gap-1 bg-zinc-950 p-1 rounded-xl border border-zinc-800">
             {SCENARIOS.map((sc) => (
@@ -411,6 +616,15 @@ function AppContent() {
           </nav>
         </div>
 
+        <div className="flex items-center justify-center">
+          <ModeSwitchPill
+            activeMode={activeMode}
+            onChangeMode={handleModeChange}
+            lang={settings.lang}
+            compact={true}
+          />
+        </div>
+
         <div className="flex flex-wrap items-center gap-2">
           <StoryModeTour
             dataset={dataset}
@@ -422,6 +636,11 @@ function AppContent() {
             setCompareMode={setCompareMode}
             setIsPlaying={setIsPlaying}
             setExaggeration={setExaggeration}
+          />
+          <TopRightUtilities
+            settings={settings}
+            onUpdateSettings={updateSettings}
+            apiMode={apiMode}
           />
         </div>
       </header>
@@ -533,6 +752,64 @@ function AppContent() {
           buffers={buffers}
         />
       )}
+
+      {/* Transición fluida hacia Modo Buscador / Agent Mode sin desmontar el visor 3D */}
+      <div
+        aria-hidden={activeMode === 'earth_engine'}
+        style={{ background: spaceShellBackdrop }}
+        className={`fixed inset-0 z-40 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+          activeMode === 'earth_engine'
+            ? 'opacity-0 scale-[1.015] pointer-events-none invisible'
+            : 'opacity-100 scale-100 visible'
+        }`}
+      >
+        <InteractiveStarfieldBg active={activeMode !== 'earth_engine'} />
+
+        <TopShellBar
+          activeMode={activeMode}
+          onChangeMode={handleModeChange}
+          settings={settings}
+          onUpdateSettings={updateSettings}
+          apiMode={apiMode}
+          showLeftBrand={activeMode !== 'search'}
+          showApiBadge={activeMode !== 'search'}
+        />
+
+        <section
+          aria-hidden={activeMode !== 'search'}
+          className={`absolute inset-0 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+            activeMode === 'search'
+              ? 'opacity-100 scale-100 translate-y-0 z-10 visible'
+              : 'opacity-0 scale-[0.985] -translate-y-2 pointer-events-none z-0 invisible'
+          }`}
+        >
+          <LandingHero
+            scenarios={SCENARIOS}
+            lang={settings.lang}
+            apiMode={apiMode}
+            initialQuery={draftZone.query}
+            onSelectLocation={handleSelectSearchLocation}
+            onEnterScenario={loadScenario}
+          />
+        </section>
+
+        <section
+          aria-hidden={activeMode !== 'agent'}
+          className={`absolute inset-0 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+            activeMode === 'agent'
+              ? 'opacity-100 scale-100 translate-y-0 z-10 visible'
+              : 'opacity-0 scale-[0.985] translate-y-2 pointer-events-none z-0 invisible'
+          }`}
+        >
+          <AgentModePreview
+            lang={settings.lang}
+            draftZone={draftZone}
+            activeDatasetTitle={dataset?.titulo}
+            onGoSearch={() => handleModeChange('search')}
+            onGoEarthEngine={() => handleModeChange('earth_engine')}
+          />
+        </section>
+      </div>
     </div>
   );
 }
