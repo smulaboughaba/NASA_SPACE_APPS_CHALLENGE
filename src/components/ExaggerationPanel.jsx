@@ -146,8 +146,9 @@ const SCENARIO_GUIDES = {
   },
 };
 
-function getGuide(dataset) {
+function getGuide(dataset, dailyCount = 0) {
   if (dataset?.is_live) {
+    const id = dataset?.id || '';
     const elev = dataset?.elev_range_m || [0, 0];
     const powerDates = dataset?.earth_system_series?.power?.dates || [];
     const nDays = powerDates.length;
@@ -156,7 +157,7 @@ function getGuide(dataset) {
     const spanStr =
       dataset?.fecha_inicio && dataset?.fecha_fin
         ? `${dataset.fecha_inicio} → ${dataset.fecha_fin}`
-        : 'Ventana regional seleccionada';
+        : `${tl[0]?.fecha || ''} → ${tl[lastIdx]?.fecha || ''}`;
     const liveTopic =
       dataset?.tipo_fenomeno ||
       (id.includes('thermal') ? 'thermal' : id.includes('seismic') ? 'seismic' : 'hydrology');
@@ -170,46 +171,46 @@ function getGuide(dataset) {
             : 'Balance hídrico y precipitación regional en vivo',
       narrativeBody:
         dataset?.resumen ||
-        'Análisis regional en tiempo real sobre relieve MDE Terrarium, texturas temporales MODIS GIBS y serie diaria oficial MERRA-2 / CERES / GPM.',
+        'Análisis regional en tiempo real sobre relieve MDE Terrarium, capturas diarias WMTS y series oficiales MERRA-2 / CERES / GPM / CAMS.',
       kpis: [
         {
           value: `${Math.round(elev[0])}–${Math.round(elev[1])} m`,
           label: 'Relieve real MDE',
-          sub: 'AWS Terrarium DEM',
+          sub: 'AWS Terrarium (~30 m)',
         },
         {
           value: `${nDays || '—'} días`,
-          label: 'Serie diaria real',
-          sub: 'MERRA-2 / GPM · USGS',
+          label: 'Serie diaria regional',
+          sub: 'MERRA-2 / GPM · ~0.5°',
         },
         {
-          value: `${tl.length || 4} pasos`,
-          label: 'Texturas GIBS (T)',
-          sub: 'Evolución temporal',
+          value: `${dailyCount || tl.length} días`,
+          label: 'Imágenes WMTS',
+          sub: 'Vista Satélite diaria',
         },
         {
-          value: `${dataset?.grid_size || 128}×${dataset?.grid_size || 128}`,
-          label: 'Malla estadística',
-          sub: 'OLS + p-valor local',
+          value: `${tl.length || 4} hitos`,
+          label: 'Simulación T₀–T₃',
+          sub: 'Modelo físico secundario',
         },
       ],
-      compareLabel1: `Inicio · ${tl[0]?.date || 'T0'}`,
+      compareLabel1: `Inicio · ${tl[0]?.fecha || 'T0'}`,
       compareIdx1: 0,
-      compareLabel2: `Cierre · ${tl[lastIdx]?.date || 'T3'}`,
+      compareLabel2: `Cierre · ${tl[lastIdx]?.fecha || 'T3'}`,
       compareIdx2: lastIdx,
       subzones: [{ id: 'all', label: 'Toda la zona', lat: null, lon: null }],
       findings: [
         {
           title: 'Topografía y cobertura satelital reales',
-          body: 'La malla 3D usa elevación real Terrarium DEM combinada con ortofoto base ArcGIS y pasadas MODIS GIBS por fecha.',
+          body: 'La malla 3D usa elevación real Terrarium DEM (~30 m) combinada con ortofoto base ArcGIS y 13 capas diarias WMTS.',
         },
         {
-          title: 'Series diarias oficiales y pruebas de tendencia',
-          body: 'En el paso 3 puedes inspeccionar la tasa de cambio, p-valor (t-Student y Mann-Kendall) e intervalo de confianza al 95%.',
+          title: 'Series diarias largas y pruebas de tendencia',
+          body: 'En Vista clara y Datos científicos puedes inspeccionar cada variable regional (t-Student y Mann-Kendall) con su unidad y escala real.',
         },
       ],
       studyNote:
-        'Haz clic sobre cualquier punto del terreno para inspeccionar su serie temporal y probar si la tendencia es estadísticamente significativa.',
+        'Haz clic sobre cualquier punto del terreno para inspeccionar su relieve y contrastarlo con la serie climática regional.',
     };
   }
   const id = dataset?.id || '';
@@ -426,6 +427,7 @@ export default function ExaggerationPanel({
   onFocusSubzone,
   onBackToGlobe,
   gibsLayerId = 'truecolor',
+  dailyDates = [],
 }) {
   const [longWindow, setLongWindow] = useState(true);
   const [importedCsv, setImportedCsv] = useState(null);
@@ -445,7 +447,7 @@ export default function ExaggerationPanel({
   const pixelReport = translatePixelPhysics(dataset, selectedVertex, tFloat, buffers);
   const impactSummary = computeInstantImpactSummary(dataset, buffers, tFloat);
   const id = dataset?.id || '';
-  const guide = getGuide(dataset);
+  const guide = getGuide(dataset, dailyDates.length);
   const timeline = dataset?.timeline || [];
   const nearestStepIdx = Math.round(Number.isFinite(Number(tFloat)) ? Number(tFloat) : 0);
 
@@ -576,10 +578,11 @@ export default function ExaggerationPanel({
       ? {
         title: `${activeGibs.label} · Satélite WMTS`,
         grad: activeGibs.legend?.grad || 'from-sky-700 via-emerald-600 to-amber-200',
+        css: activeGibs.legend?.css || null,
         left: activeGibs.legend?.left || 'Imagen real',
         right: activeGibs.legend?.right || `Resolución ${activeGibs.resolution}`,
         Icon: Eye,
-        note: `${activeGibs.description} Resolución nativa ${activeGibs.resolution}: si la caja es pequeña, la capa se verá en bloques porque es el tamaño real del píxel del satélite.`,
+        note: `${activeGibs.description} Resolución nativa ${activeGibs.resolution}: en cajas pequeñas los píxeles reales gruesos se muestran semitransparentes sobre el relieve para conservar el contexto geográfico.`,
       }
       : effectiveRenderMode === 'significance'
       ? {
@@ -689,7 +692,7 @@ export default function ExaggerationPanel({
             className="inline-flex items-center gap-1 text-[11px] font-medium text-zinc-300 hover:text-white transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            Volver a casos
+            Globo
           </button>
           <div className="flex items-center gap-1.5">
             <span className="text-[10px] font-mono uppercase tracking-[0.12em] text-zinc-400">
@@ -939,7 +942,10 @@ export default function ExaggerationPanel({
               <ScaleIcon className="w-3.5 h-3.5 text-zinc-400" />
               {colorLegend.title}
             </div>
-            <div className={`h-2.5 w-full rounded-full bg-gradient-to-r ${colorLegend.grad} border border-zinc-700`} />
+            <div
+              className={`h-2.5 w-full rounded-full ${colorLegend.css ? '' : `bg-gradient-to-r ${colorLegend.grad}`} border border-zinc-700`}
+              style={colorLegend.css ? { background: colorLegend.css } : undefined}
+            />
             <div className="flex justify-between text-[10px] font-mono text-zinc-400">
               <span>{colorLegend.left}</span>
               <span>{colorLegend.right}</span>
@@ -966,12 +972,15 @@ export default function ExaggerationPanel({
                 </div>
                 {dailyContext?.analysis && (
                   <span
-                    className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${dailyContext.analysis.isSignificant
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-medium border truncate max-w-[180px] ${dailyContext.analysis.isSignificant
                       ? 'bg-emerald-950/70 border-emerald-500/40 text-emerald-300'
                       : 'bg-zinc-900 border-zinc-700 text-zinc-300'
                       }`}
+                    title={dailyContext.title}
                   >
-                    {dailyContext.analysis.isSignificant ? 'Cambio sostenido real' : 'Episodio puntual / estable'}
+                    {dailyContext.analysis.isSignificant
+                      ? `Tendencia · ${VAR_SHORT_LABELS[activeVarKey] || activeVarKey}`
+                      : `Sin tendencia · ${VAR_SHORT_LABELS[activeVarKey] || activeVarKey}`}
                   </span>
                 )}
               </div>
@@ -1019,6 +1028,9 @@ export default function ExaggerationPanel({
                       : `En ${dailyContext.analysis.count} días no hay una subida o bajada continua (p = ${dailyContext.analysis.pValue.toFixed(2)}), aunque puede haber picos concretos.`}
                   </p>
                   <DailySeriesChart analysis={dailyContext.analysis} />
+                  <div className="text-[10px] font-mono text-zinc-500 leading-snug">
+                    Escala regional (~0.5° rejilla climática) · independiente del relieve local MDE (~30 m).
+                  </div>
                 </div>
               )}
 
@@ -1034,13 +1046,20 @@ export default function ExaggerationPanel({
             </div>
           )}
 
-          {/* Evolución por instantes (T₀ → T₃) */}
+          {/* Evolución por hitos de simulación (T₀ → T₃) */}
           {timeline.length > 0 && (
             <div className="bg-zinc-950/90 border border-zinc-800 rounded-2xl p-3.5 space-y-2.5">
-              <div className="flex items-center gap-2 text-xs font-medium text-zinc-200">
-                <Clock className="w-3.5 h-3.5 text-zinc-400" />
-                Viaja por las fechas (T₀ → T{timeline.length - 1})
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 text-xs font-medium text-zinc-200">
+                  <Clock className="w-3.5 h-3.5 text-zinc-400" />
+                  Hitos de referencia (T₀ → T{timeline.length - 1})
+                </div>
               </div>
+              {effectiveRenderMode === 'gibs' && dailyDates.length > 1 && (
+                <p className="text-[10px] font-mono text-zinc-500 leading-snug">
+                  El deslizador inferior recorre los {dailyDates.length} días reales WMTS; estos hitos marcan la simulación física.
+                </p>
+              )}
               <div className="grid grid-cols-2 gap-1.5">
                 {timeline.map((step, idx) => {
                   const active = nearestStepIdx === idx;
@@ -1111,12 +1130,98 @@ export default function ExaggerationPanel({
         </>
       ) : (
         <>
-          {/* Tarjeta Inspección de Vértice (Detective de Tendencias y Correlación) */}
+          {/* Serie diaria/larga del Sistema Terrestre (prioridad científica sobre el ajuste de 4 hitos) */}
+          {dailyContext?.analysis && (
+            <div className="bg-zinc-950/90 border border-zinc-800 rounded-2xl p-3.5 space-y-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 text-xs font-medium text-zinc-200 truncate">
+                  <Activity className="w-3.5 h-3.5 text-cyan-300 shrink-0" />
+                  <span className="truncate">{dailyContext.title}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => (importedCsv ? setImportedCsv(null) : setLongWindow((v) => !v))}
+                  className="px-2 py-0.5 rounded-md bg-zinc-900 border border-zinc-700 text-[10px] font-mono text-cyan-300 hover:border-cyan-400 shrink-0"
+                >
+                  {importedCsv
+                    ? 'Serie oficial'
+                    : longWindow
+                      ? `Completa (${dailyContext.analysis.count}d)`
+                      : 'Últimos 30d'}
+                </button>
+              </div>
+
+              {availableVars.length > 1 && (
+                <div className="flex flex-wrap gap-1 pb-1 border-b border-zinc-800/80">
+                  {availableVars.map((v) => {
+                    const active = activeVarKey === v.key && !importedCsv;
+                    return (
+                      <button
+                        key={v.key}
+                        type="button"
+                        onClick={() => {
+                          setImportedCsv(null);
+                          setSelectedVar(v.key);
+                        }}
+                        className={`px-2 py-0.5 rounded-md border text-[10px] font-mono transition-colors ${
+                          active
+                            ? 'bg-cyan-400/20 border-cyan-400/75 text-cyan-200 font-semibold'
+                            : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-600'
+                        }`}
+                      >
+                        {v.key}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              <div className="text-[10px] font-mono text-zinc-400">
+                {dailyContext.source} · {dailyContext.analysis.start} → {dailyContext.analysis.end}
+              </div>
+
+              <DailySeriesChart analysis={dailyContext.analysis} />
+
+              <div className="grid grid-cols-2 gap-1.5 text-[10px]">
+                <div className="bg-zinc-900 border border-zinc-800 rounded-lg px-2 py-1">
+                  <span className="text-zinc-400">Pendiente diaria:</span>{' '}
+                  <span className="font-mono text-zinc-100 font-semibold">
+                    {dailyContext.analysis.slopeLabel}
+                  </span>
+                </div>
+                <div className="bg-zinc-900 border border-zinc-800 rounded-lg px-2 py-1">
+                  <span className="text-zinc-400">Significancia:</span>{' '}
+                  <span
+                    className={`font-mono font-semibold ${
+                      dailyContext.analysis.isSignificant ? 'text-emerald-300' : 'text-amber-300'
+                    }`}
+                  >
+                    {dailyContext.analysis.pValue < 0.05
+                      ? `p=${dailyContext.analysis.pValue.toFixed(3)}`
+                      : `p=${dailyContext.analysis.pValue.toFixed(2)} (no sig.)`}
+                  </span>
+                </div>
+              </div>
+
+              {dailyContext.def && (
+                <div className="flex items-start gap-1.5 text-[10px] text-zinc-300 bg-zinc-900/70 border border-zinc-800/80 rounded-lg px-2 py-1.5 leading-snug">
+                  <BookOpen className="w-3 h-3 text-cyan-300 shrink-0 mt-0.5" />
+                  <span>{dailyContext.def.definicion}</span>
+                </div>
+              )}
+
+              <div className="text-[9px] font-mono text-zinc-500 leading-snug">
+                Celda regional (~0.5°) · análisis robusto sobre {dailyContext.analysis.count} observaciones diarias.
+              </div>
+            </div>
+          )}
+
+          {/* Tarjeta Inspección de Vértice (estimado sobre T₀..T₃ del modelo 3D) */}
           <div className="bg-zinc-950/90 border border-zinc-800 rounded-2xl p-3.5">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 text-xs font-medium text-zinc-200">
                 <Crosshair className="w-3.5 h-3.5 text-zinc-400" />
-                Detective de Tendencias · Vértice
+                Inspección puntual · Vértice ({timeline.length} hitos)
               </div>
               {pixelReport && (
                 <span className="text-[11px] font-mono tabular-nums text-zinc-400">
@@ -1127,7 +1232,7 @@ export default function ExaggerationPanel({
 
             {!pixelReport ? (
               <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
-                Haz clic en cualquier punto del relieve 3D para analizar su tendencia lineal, significancia estadística y correlación cruzada.
+                Haz clic en cualquier punto del relieve 3D para inspeccionar su cota DEM y estimación temporal sobre T₀–T{Math.max(0, timeline.length - 1)}.
               </p>
             ) : (
               <div className="mt-2.5 space-y-2.5 text-xs">
@@ -1138,7 +1243,7 @@ export default function ExaggerationPanel({
                       : 'bg-zinc-900 border-zinc-700/80 text-zinc-300'
                       }`}
                   >
-                    <span>Mann-Kendall / t-test</span>
+                    <span>Est. T₀–T{Math.max(0, timeline.length - 1)} (t-test / MK)</span>
                     <span className="font-semibold">{pixelReport.trendStats.pValueLabel}</span>
                   </div>
                 )}
@@ -1196,85 +1301,6 @@ export default function ExaggerationPanel({
                   unit={pixelReport.unit}
                   trendStats={pixelReport.trendStats}
                 />
-
-                {/* Serie diaria/larga del Sistema Terrestre + Selector Multi-Satélite + Definición + Gráfica */}
-                {dailyContext?.analysis && (
-                  <div className="bg-zinc-900/90 border border-zinc-800 rounded-xl p-2.5 space-y-2">
-                    {availableVars.length > 1 && (
-                      <div className="flex flex-wrap gap-1 pb-1 border-b border-zinc-800/80">
-                        {availableVars.map((v) => {
-                          const active = activeVarKey === v.key && !importedCsv;
-                          return (
-                            <button
-                              key={v.key}
-                              type="button"
-                              onClick={() => {
-                                setImportedCsv(null);
-                                setSelectedVar(v.key);
-                              }}
-                              className={`px-2 py-0.5 rounded-md border text-[10px] font-mono transition-colors ${
-                                active
-                                  ? 'bg-cyan-400/20 border-cyan-400/75 text-cyan-200 font-semibold'
-                                  : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-600'
-                              }`}
-                            >
-                              {v.key}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="text-[11px] font-semibold text-zinc-100 truncate">
-                        {dailyContext.title}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => (importedCsv ? setImportedCsv(null) : setLongWindow((v) => !v))}
-                        className="px-2 py-0.5 rounded-md bg-zinc-950 border border-zinc-700 text-[10px] font-mono text-cyan-300 hover:border-cyan-400 shrink-0"
-                      >
-                        {importedCsv
-                          ? 'Serie oficial'
-                          : longWindow
-                            ? `Completa (${dailyContext.analysis.count}d)`
-                            : 'Últimos 30d'}
-                      </button>
-                    </div>
-
-                    <div className="text-[10px] font-mono text-zinc-400">
-                      {dailyContext.source} · {dailyContext.analysis.start} → {dailyContext.analysis.end}
-                    </div>
-
-                    <DailySeriesChart analysis={dailyContext.analysis} />
-
-                    <div className="grid grid-cols-2 gap-1.5 text-[10px]">
-                      <div className="bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1">
-                        <span className="text-zinc-400">Pendiente diaria:</span>{' '}
-                        <span className="font-mono text-zinc-100 font-semibold">
-                          {dailyContext.analysis.slopeLabel}
-                        </span>
-                      </div>
-                      <div className="bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1">
-                        <span className="text-zinc-400">Significancia:</span>{' '}
-                        <span
-                          className={`font-mono font-semibold ${dailyContext.analysis.isSignificant ? 'text-emerald-300' : 'text-amber-300'
-                            }`}
-                        >
-                          {dailyContext.analysis.pValue < 0.05
-                            ? `p=${dailyContext.analysis.pValue.toFixed(3)}`
-                            : `p=${dailyContext.analysis.pValue.toFixed(2)} (no sig.)`}
-                        </span>
-                      </div>
-                    </div>
-
-                    {dailyContext.def && (
-                      <div className="flex items-start gap-1.5 text-[10px] text-zinc-300 bg-zinc-950/70 border border-zinc-800/80 rounded-lg px-2 py-1.5 leading-snug">
-                        <BookOpen className="w-3 h-3 text-cyan-300 shrink-0 mt-0.5" />
-                        <span>{dailyContext.def.definicion}</span>
-                      </div>
-                    )}
-                  </div>
-                )}
 
                 <div className="flex flex-wrap items-center gap-1.5 pt-1">
                   <input

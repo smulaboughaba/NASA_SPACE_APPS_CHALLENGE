@@ -68,11 +68,10 @@ input[type='range']::-webkit-slider-thumb {
   background: #f4f4f5;
   border: 1px solid rgba(9, 9, 11, 0.5);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
-  transition: transform 0.12s ease, background-color 0.12s ease;
+  transition: background-color 0.12s ease;
 }
 
 input[type='range']::-webkit-slider-thumb:hover {
-  transform: scale(1.1);
   background: #ffffff;
 }
 
@@ -89,7 +88,7 @@ input[type='range']::-moz-range-thumb {
   background: #f4f4f5;
   border: 1px solid rgba(9, 9, 11, 0.5);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
-  transition: transform 0.12s ease, background-color 0.12s ease;
+  transition: background-color 0.12s ease;
 }
 
 @keyframes geowaveFadeIn {

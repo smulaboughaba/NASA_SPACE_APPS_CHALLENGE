@@ -12,6 +12,7 @@ import InteractiveStarfieldBg from './components/InteractiveStarfieldBg';
 import { computeInterpolatedBuffers } from './utils/sarMath';
 import { analyzeZoneClientSide } from './utils/liveZoneClient';
 import { formatDateOffset } from './utils/searchEngine';
+import { getDatasetDailyDates } from './utils/gibsLayers';
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 const SETTINGS_KEY = 'geowave.settings.v1';
@@ -150,6 +151,7 @@ function AppContent() {
   const [discreteOnly, setDiscreteOnly] = useState(false);
   const [renderMode, setRenderMode] = useState('gibs'); // 'gibs' (vista satélite real) | 'hybrid' (simulación) | 'driver'
   const [gibsLayerId, setGibsLayerId] = useState('truecolor');
+  const [gibsStatuses, setGibsStatuses] = useState([]);
   const [compareMode, setCompareMode] = useState(false);
   const [splitX, setSplitX] = useState(0.5);
   const [exaggeration, setExaggeration] = useState(2);
@@ -330,18 +332,60 @@ function AppContent() {
   };
 
   const dataset = datasetCache[activeScenarioId] || null;
+  const dailyDates = useMemo(() => getDatasetDailyDates(dataset, 36), [dataset]);
+  const simQuantizedT =
+    renderMode === 'gibs' && dataset?.timeline?.length
+      ? Math.min(dataset.timeline.length - 1, Math.max(0, Math.round(tFloat)))
+      : tFloat;
 
-  // Interpolación Catmull-Rom / Hermite para el instante T actual
+  // Interpolación Catmull-Rom / Hermite (congelada en enteros cuando domina Vista Satélite GIBS)
   const buffers = useMemo(() => {
     if (!dataset?.timeline) return null;
-    return computeInterpolatedBuffers(dataset.timeline, tFloat);
-  }, [dataset, tFloat]);
+    return computeInterpolatedBuffers(dataset.timeline, simQuantizedT);
+  }, [dataset, simQuantizedT]);
 
-  // Bucle limpio de reproducción continua o discreta (Solo pasadas reales) en Eje T
+  // Bucle limpio de reproducción: diaria discreta en GIBS / continua o por hitos en Simulación
   useEffect(() => {
     if (!isPlaying || !dataset?.timeline) return;
     const maxIdx = Math.max(0, dataset.timeline.length - 1);
     const speed = Number.isFinite(Number(playbackSpeed)) ? Number(playbackSpeed) : 1;
+
+    if (renderMode === 'gibs' && dailyDates.length > 1) {
+      const dailyMax = dailyDates.length - 1;
+      const intervalMs = Math.max(240, Math.round(720 / Math.max(0.25, speed)));
+      const hasLoadedFrames = gibsStatuses.some((s) => s === 'loaded');
+      const timerId = setInterval(() => {
+        const curRatio = maxIdx > 0 ? (Number(tFloatRef.current) || 0) / maxIdx : 0;
+        const curDay = Math.max(0, Math.min(dailyMax, Math.round(curRatio * dailyMax)));
+        let nextDay = curDay + 1;
+        if (discreteOnly && hasLoadedFrames) {
+          while (nextDay <= dailyMax && gibsStatuses[nextDay] !== 'loaded') {
+            nextDay += 1;
+          }
+        }
+        if (nextDay > dailyMax) {
+          if (isLooping) {
+            let firstDay = 0;
+            if (discreteOnly && hasLoadedFrames) {
+              const firstValid = gibsStatuses.findIndex((s) => s === 'loaded');
+              if (firstValid >= 0) firstDay = firstValid;
+            }
+            const nextVal = dailyMax > 0 ? (firstDay / dailyMax) * maxIdx : 0;
+            tFloatRef.current = nextVal;
+            setTFloat(nextVal);
+          } else {
+            tFloatRef.current = maxIdx;
+            setTFloat(maxIdx);
+            setIsPlaying(false);
+          }
+          return;
+        }
+        const nextVal = dailyMax > 0 ? (nextDay / dailyMax) * maxIdx : 0;
+        tFloatRef.current = nextVal;
+        setTFloat(nextVal);
+      }, intervalMs);
+      return () => clearInterval(timerId);
+    }
 
     if (discreteOnly) {
       const intervalMs = Math.max(350, Math.round(1400 / Math.max(0.25, speed)));
@@ -394,7 +438,7 @@ function AppContent() {
 
     rafId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafId);
-  }, [isPlaying, isLooping, playbackSpeed, discreteOnly, dataset]);
+  }, [isPlaying, isLooping, playbackSpeed, discreteOnly, renderMode, dailyDates, gibsStatuses, dataset]);
 
   const handleTogglePlay = () => {
     if (!dataset?.timeline) return;
@@ -410,7 +454,7 @@ function AppContent() {
   const handleManualSeek = (val) => {
     setStoryModeActive(false);
     setIsPlaying(false);
-    const nextVal = discreteOnly ? Math.round(val) : val;
+    const nextVal = discreteOnly && renderMode !== 'gibs' ? Math.round(val) : val;
     tFloatRef.current = nextVal;
     setTFloat(nextVal);
   };
@@ -734,6 +778,8 @@ function AppContent() {
             setStoryModeActive={setStoryModeActive}
             tFloat={tFloat}
             setTFloat={setTFloat}
+            setRenderMode={setRenderMode}
+            setGibsLayerId={setGibsLayerId}
             setOpticalMode={setOpticalMode}
             setCompareMode={setCompareMode}
             setIsPlaying={setIsPlaying}
@@ -782,6 +828,8 @@ function AppContent() {
               focusSubzone={focusSubzone}
               gibsLayerId={gibsLayerId}
               setGibsLayerId={setGibsLayerId}
+              dailyDates={dailyDates}
+              onGibsStatusesChange={setGibsStatuses}
             />
           )}
         </main>
@@ -808,6 +856,7 @@ function AppContent() {
             onFocusSubzone={handleFocusSubzone}
             onBackToGlobe={handleBackToGlobe}
             gibsLayerId={gibsLayerId}
+            dailyDates={dailyDates}
           />
         )}
       </div>
@@ -837,6 +886,9 @@ function AppContent() {
           splitX={splitX}
           setSplitX={setSplitX}
           buffers={buffers}
+          dailyDates={dailyDates}
+          gibsStatuses={gibsStatuses}
+          gibsLayerId={gibsLayerId}
         />
       )}
 

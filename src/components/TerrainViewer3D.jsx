@@ -196,6 +196,7 @@ const TERRAIN_FRAGMENT_SHADER = /* glsl */ `
   uniform float uGibsMix;
   uniform float uHasGibs;
   uniform float uGibsOverlay;
+  uniform float uGibsOpacity;
 
   varying vec2 vUv;
   varying float vDef;
@@ -318,14 +319,14 @@ const TERRAIN_FRAGMENT_SHADER = /* glsl */ `
       interpOpt = mix(optA, optB, clamp(uTexMix, 0.0, 1.0));
     }
 
-    // Perturbación micro-topográfica desde la textura fotogramétrica para realce 3D nítido
+    // Perturbación micro-topográfica suave solo en modos ortofoto/simulación (no en capas GIBS para evitar efecto grabado)
     vec3 N = normalize(vNormalW);
-    if (uHasBaseTex > 0.5 && isLand > 0.5) {
+    if (uHasBaseTex > 0.5 && isLand > 0.5 && uRenderMode != 4) {
       float tx = 1.0 / 1024.0;
       float lC = dot(texture2D(uBaseTex, warpedUv).rgb, vec3(0.299, 0.587, 0.114));
       float lX = dot(texture2D(uBaseTex, min(warpedUv + vec2(tx, 0.0), vec2(0.999))).rgb, vec3(0.299, 0.587, 0.114));
       float lZ = dot(texture2D(uBaseTex, min(warpedUv + vec2(0.0, tx), vec2(0.999))).rgb, vec3(0.299, 0.587, 0.114));
-      N = normalize(N + vec3((lC - lX) * 0.28, 0.0, (lC - lZ) * 0.28));
+      N = normalize(N + vec3((lC - lX) * 0.14, 0.0, (lC - lZ) * 0.14));
     }
 
     vec3 L = normalize(vec3(0.58, 0.78, 0.42));
@@ -340,31 +341,31 @@ const TERRAIN_FRAGMENT_SHADER = /* glsl */ `
 
     vec3 surfaceCol;
     if (uRenderMode == 4) {
-      // Capa real GIBS del día (timelapse diario) con pan-sharpening selectivo
+      // Capa real GIBS del día: relieve natural por normales DEM + opacidad calibrada en capas gruesas
       vec4 g = isPreSide ? texture2D(uGibsPre, vUv) : mix(texture2D(uGibsA, vUv), texture2D(uGibsB, vUv), clamp(uGibsMix, 0.0, 1.0));
       if (uHasGibs < 0.5) {
         surfaceCol = baseOrtho;
+        light = 0.68 + 0.36 * diff;
       } else if (uGibsOverlay > 0.5) {
         float cov = smoothstep(0.02, 0.25, g.a);
-        float gL = dot(g.rgb, vec3(0.299, 0.587, 0.114));
-        vec3 vividOverlay = clamp(mix(vec3(gL), g.rgb, 1.25), 0.0, 1.0);
-        surfaceCol = mix(baseOrtho, vividOverlay, cov * 0.86);
+        float alpha = cov * clamp(uGibsOpacity, 0.25, 0.85);
+        surfaceCol = mix(baseOrtho, g.rgb, alpha);
+        light = 0.62 + 0.44 * diff;
       } else {
-        float stepUv = 3.0 / 1024.0;
+        float stepUv = 1.0 / 1024.0;
         float baseLum = dot(baseOrtho, vec3(0.299, 0.587, 0.114));
         float b1 = dot(texture2D(uBaseTex, min(vUv + vec2(stepUv, 0.0), vec2(0.999))).rgb, vec3(0.299, 0.587, 0.114));
         float b2 = dot(texture2D(uBaseTex, max(vUv - vec2(stepUv, 0.0), vec2(0.001))).rgb, vec3(0.299, 0.587, 0.114));
         float b3 = dot(texture2D(uBaseTex, min(vUv + vec2(0.0, stepUv), vec2(0.999))).rgb, vec3(0.299, 0.587, 0.114));
         float b4 = dot(texture2D(uBaseTex, max(vUv - vec2(0.0, stepUv), vec2(0.001))).rgb, vec3(0.299, 0.587, 0.114));
-        float highPass = baseLum - 0.25 * (b1 + b2 + b3 + b4);
+        float subtleDetail = baseLum - 0.25 * (b1 + b2 + b3 + b4);
         float gLum = dot(g.rgb, vec3(0.299, 0.587, 0.114));
-        float cloudFree = (1.0 - smoothstep(0.52, 0.76, gLum)) * uHasBaseTex;
-        surfaceCol = clamp(g.rgb + vec3(highPass * 0.75 * cloudFree), 0.0, 1.0);
+        float cloudFree = (1.0 - smoothstep(0.48, 0.72, gLum)) * uHasBaseTex;
+        surfaceCol = clamp(g.rgb + vec3(subtleDetail * 0.15 * cloudFree), 0.0, 1.0);
+        light = 0.68 + 0.38 * diff;
       }
-      // Realce de contraste y saturación viva sin lavar luces
       float l2 = dot(surfaceCol, vec3(0.299, 0.587, 0.114));
-      surfaceCol = clamp(mix(vec3(l2), surfaceCol, 1.24), 0.0, 1.0);
-      light = 0.82 + 0.28 * diff;
+      surfaceCol = clamp(mix(vec3(l2), surfaceCol, 1.08), 0.0, 1.0);
       spec = 0.0;
     } else if (isPreSide || uRenderMode == 1) {
       // Lado "Antes" en comparador o modo "Satelital HD (T)": ortofoto multi-temporal pura
@@ -662,6 +663,7 @@ function TerrainMeshSurface({
       uGibsMix: { value: 0.0 },
       uHasGibs: { value: 0.0 },
       uGibsOverlay: { value: 0.0 },
+      uGibsOpacity: { value: 0.50 },
     };
   }
 
@@ -798,6 +800,7 @@ function TerrainMeshSurface({
       u.uGibsMix.value = Number.isFinite(g.mix) ? g.mix : 0;
       u.uHasGibs.value = g.texA ? 1.0 : 0.0;
       u.uGibsOverlay.value = g.overlay ? 1.0 : 0.0;
+      u.uGibsOpacity.value = Number.isFinite(g.opacity) ? g.opacity : 0.50;
       u.uRenderMode.value = renderModeInt;
     }
 
@@ -971,6 +974,8 @@ export default function TerrainViewer3D({
   isPlaying = false,
   gibsLayerId = 'truecolor',
   setGibsLayerId,
+  dailyDates: propDailyDates,
+  onGibsStatusesChange,
 }) {
   const containerRef = useRef(null);
   const [draggingSplit, setDraggingSplit] = useState(false);
@@ -986,22 +991,30 @@ export default function TerrainViewer3D({
 
   // ===== Timelapse diario satelital real GIBS (cargado en el navegador) =====
   const gibsLayer = getGibsLayer(gibsLayerId);
-  const dailyDates = useMemo(() => getDatasetDailyDates(dataset, 36), [dataset]);
+  const dailyDates = useMemo(
+    () => (Array.isArray(propDailyDates) && propDailyDates.length ? propDailyDates : getDatasetDailyDates(dataset, 36)),
+    [propDailyDates, dataset]
+  );
   const [gibsFrames, setGibsFrames] = useState([]); // [{ date, tex } | null]
   const [gibsInfo, setGibsInfo] = useState({ loaded: 0, empty: 0, total: 0, nativePx: 0 });
+  const statusesCbRef = useRef(onGibsStatusesChange);
+  statusesCbRef.current = onGibsStatusesChange;
 
   useEffect(() => {
     const bbox = dataset?.bbox;
     if (!Array.isArray(bbox) || bbox.length !== 4 || !dailyDates.length) {
       setGibsFrames([]);
       setGibsInfo({ loaded: 0, empty: 0, total: 0, nativePx: 0 });
+      statusesCbRef.current?.([]);
       return undefined;
     }
     const ctrl = new AbortController();
     const created = [];
     const frames = new Array(dailyDates.length).fill(null);
+    const statuses = new Array(dailyDates.length).fill('pending');
     setGibsFrames([...frames]);
     setGibsInfo({ loaded: 0, empty: 0, total: dailyDates.length, nativePx: 0 });
+    statusesCbRef.current?.([...statuses]);
 
     let next = 0;
     let loaded = 0;
@@ -1019,13 +1032,16 @@ export default function TerrainViewer3D({
           tex.magFilter = THREE.LinearFilter;
           created.push(tex);
           frames[idx] = { date, tex };
+          statuses[idx] = 'loaded';
           loaded += 1;
           setGibsInfo((p) => ({ ...p, loaded, nativePx: res.nativePx }));
         } else {
+          statuses[idx] = 'empty';
           empty += 1;
           setGibsInfo((p) => ({ ...p, empty }));
         }
         setGibsFrames([...frames]);
+        statusesCbRef.current?.([...statuses]);
       }
     };
     Promise.all([worker(), worker(), worker(), worker()]);
@@ -1060,6 +1076,7 @@ export default function TerrainViewer3D({
       texPre: first >= 0 ? gibsFrames[first].tex : null,
       mix,
       overlay: gibsLayer.overlay,
+      opacity: gibsLayer.overlayOpacity ?? (gibsLayer.maxLevel <= 6 ? 0.50 : 0.68),
       date: mix < 0.5 ? gibsFrames[a].date : gibsFrames[b].date,
       preDate: first >= 0 ? gibsFrames[first].date : '',
     };
@@ -1347,7 +1364,10 @@ export default function TerrainViewer3D({
             <p className="text-[11px] text-zinc-300 leading-snug">{gibsLayer.description}</p>
             {gibsLayer.legend && (
               <div>
-                <div className={`h-2 rounded-full bg-gradient-to-r ${gibsLayer.legend.grad}`} />
+                <div
+                  className={`h-2 rounded-full ${gibsLayer.legend.css ? '' : `bg-gradient-to-r ${gibsLayer.legend.grad}`}`}
+                  style={gibsLayer.legend.css ? { background: gibsLayer.legend.css } : undefined}
+                />
                 <div className="flex justify-between text-[10px] text-zinc-400 mt-0.5">
                   <span>{gibsLayer.legend.left}</span>
                   <span>{gibsLayer.legend.right}</span>
